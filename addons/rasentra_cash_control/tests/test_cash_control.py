@@ -94,3 +94,19 @@ class TestCashControl(RasentraDataMixin, TestPoSCommon):
         self.assertEqual(report["net"], "300000.00")
         self.assertEqual(report["payments"], {"cash": "200000.00", "edc_manual": "100000.00"})
         self.assertEqual(report["expected"]["cash"], "300000.00")
+
+    def test_close_day_summary_versions(self):
+        """Tutup hari mengirim ringkasan struk dan selisih kas; dijalankan ulang = versi berikutnya."""
+        self.sell(3)
+        self.sell(1, self.bank_pm1)
+        self.close_check("395000")
+        date = self.session.rasentra_business_date
+        first = self.outlet.rasentra_close_day(date)
+        payload = first.payload
+        self.assertEqual((payload["orders"], payload["net_amount"]), (2, "400000.00"))
+        self.assertEqual(payload["payments"], {"cash": "300000.00", "edc_manual": "100000.00"})
+        self.assertEqual(payload["cash_difference"], "-5000.00")
+        self.assertEqual(payload["open_shifts"], 0)
+        self.assertEqual(len(payload["doc_nos"]), 2)
+        second = self.outlet.rasentra_close_day(date)
+        self.assertEqual((first.entity_uuid, second.entity_version), (second.entity_uuid, 2))

@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_hq_order_list" model="ir.ui.view">
+        <field name="name">rasentra.hq.order.list</field>
+        <field name="model">rasentra.hq.order</field>
+        <field name="arch" type="xml">
+            <list create="false" decoration-danger="kind == 'return'">
+                <field name="business_date"/>
+                <field name="outlet_id"/>
+                <field name="doc_no"/>
+                <field name="kind"/>
+                <field name="channel"/>
+                <field name="gross_amount" sum="Bruto"/>
+                <field name="discount_amount" sum="Diskon"/>
+                <field name="net_amount" sum="Bersih"/>
+                <field name="finalized_at"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hq_order_form" model="ir.ui.view">
+        <field name="name">rasentra.hq.order.form</field>
+        <field name="model">rasentra.hq.order</field>
+        <field name="arch" type="xml">
+            <form create="false" edit="false">
+                <sheet>
+                    <div class="oe_title"><h1><field name="doc_no"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="outlet_id"/>
+                            <field name="business_date"/>
+                            <field name="kind"/>
+                            <field name="channel"/>
+                            <field name="original_order_id" invisible="kind != 'return'"/>
+                        </group>
+                        <group>
+                            <field name="gross_amount"/>
+                            <field name="discount_amount"/>
+                            <field name="net_amount"/>
+                            <field name="finalized_at"/>
+                            <field name="uuid"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Baris">
+                            <field name="line_ids">
+                                <list>
+                                    <field name="line_no"/>
+                                    <field name="product_code"/>
+                                    <field name="product_id"/>
+                                    <field name="pack_code"/>
+                                    <field name="quantity"/>
+                                    <field name="uom"/>
+                                    <field name="gross_amount"/>
+                                    <field name="discount_amount"/>
+                                    <field name="net_amount"/>
+                                    <field name="disposition" optional="hide"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Diskon promo">
+                            <field name="discount_ids">
+                                <list>
+                                    <field name="line_no"/>
+                                    <field name="promotion_version_id"/>
+                                    <field name="amount"/>
+                                    <field name="funded_by"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Pembayaran">
+                            <field name="payment_ids">
+                                <list>
+                                    <field name="method"/>
+                                    <field name="amount"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_hq_order_search" model="ir.ui.view">
+        <field name="name">rasentra.hq.order.search</field>
+        <field name="model">rasentra.hq.order</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="doc_no"/>
+                <field name="outlet_id"/>
+                <filter name="sales" string="Penjualan" domain="[('kind', '=', 'sale')]"/>
+                <filter name="returns" string="Retur" domain="[('kind', '=', 'return')]"/>
+                <filter name="today" string="Hari ini" domain="[('business_date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <group expand="0" string="Kelompok">
+                    <filter name="by_outlet" string="Outlet" context="{'group_by': 'outlet_id'}"/>
+                    <filter name="by_date" string="Tanggal bisnis" context="{'group_by': 'business_date:day'}"/>
+                    <filter name="by_channel" string="Kanal" context="{'group_by': 'channel'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_hq_order_pivot" model="ir.ui.view">
+        <field name="name">rasentra.hq.order.pivot</field>
+        <field name="model">rasentra.hq.order</field>
+        <field name="arch" type="xml">
+            <pivot string="Penjualan outlet">
+                <field name="outlet_id" type="row"/>
+                <field name="business_date" interval="day" type="col"/>
+                <field name="net_amount" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_hq_order_graph" model="ir.ui.view">
+        <field name="name">rasentra.hq.order.graph</field>
+        <field name="model">rasentra.hq.order</field>
+        <field name="arch" type="xml">
+            <graph string="Penjualan outlet" type="line">
+                <field name="business_date" interval="day"/>
+                <field name="outlet_id"/>
+                <field name="net_amount" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="action_hq_order" model="ir.actions.act_window">
+        <field name="name">Penjualan outlet</field>
+        <field name="res_model">rasentra.hq.order</field>
+        <field name="view_mode">list,pivot,graph,form</field>
+    </record>
+
+    <record id="view_hq_line_pivot" model="ir.ui.view">
+        <field name="name">rasentra.hq.order.line.pivot</field>
+        <field name="model">rasentra.hq.order.line</field>
+        <field name="arch" type="xml">
+            <pivot string="Penjualan per produk">
+                <field name="product_id" type="row"/>
+                <field name="outlet_id" type="col"/>
+                <field name="quantity" type="measure"/>
+                <field name="net_amount" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="action_hq_line" model="ir.actions.act_window">
+        <field name="name">Penjualan per produk</field>
+        <field name="res_model">rasentra.hq.order.line</field>
+        <field name="view_mode">pivot,graph,list</field>
+    </record>
+
+    <record id="view_hq_discount_pivot" model="ir.ui.view">
+        <field name="name">rasentra.hq.order.discount.pivot</field>
+        <field name="model">rasentra.hq.order.discount</field>
+        <field name="arch" type="xml">
+            <pivot string="Diskon promo">
+                <field name="promotion_version_id" type="row"/>
+                <field name="funded_by" type="col"/>
+                <field name="amount" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="action_hq_discount" model="ir.actions.act_window">
+        <field name="name">Diskon promo per versi</field>
+        <field name="res_model">rasentra.hq.order.discount</field>
+        <field name="view_mode">pivot,graph,list</field>
+    </record>
+
+    <menuitem id="menu_reports" name="Laporan" parent="rasentra_core.menu_rasentra_root" sequence="60"/>
+    <menuitem id="menu_hq_order" action="action_hq_order" parent="menu_reports" sequence="10"/>
+    <menuitem id="menu_hq_line" action="action_hq_line" parent="menu_reports" sequence="20"/>
+    <menuitem id="menu_hq_discount" action="action_hq_discount" parent="menu_reports" sequence="30"/>
+</odoo>

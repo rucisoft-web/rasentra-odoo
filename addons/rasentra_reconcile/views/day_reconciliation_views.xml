@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_day_reconciliation_list" model="ir.ui.view">
+        <field name="name">rasentra.day.reconciliation.list</field>
+        <field name="model">rasentra.day.reconciliation</field>
+        <field name="arch" type="xml">
+            <list create="false" decoration-success="status == 'matched'" decoration-warning="status == 'waiting'"
+                  decoration-danger="status == 'mismatch'">
+                <field name="business_date"/>
+                <field name="outlet_id"/>
+                <field name="local_orders"/>
+                <field name="central_orders"/>
+                <field name="local_net"/>
+                <field name="central_net"/>
+                <field name="missing_count"/>
+                <field name="extra_count"/>
+                <field name="cash_difference"/>
+                <field name="open_shifts"/>
+                <field name="status" widget="badge"/>
+                <field name="checked_at"/>
+                <button name="action_recheck" type="object" string="Periksa ulang" icon="fa-refresh"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_day_reconciliation_form" model="ir.ui.view">
+        <field name="name">rasentra.day.reconciliation.form</field>
+        <field name="model">rasentra.day.reconciliation</field>
+        <field name="arch" type="xml">
+            <form create="false" edit="false">
+                <header>
+                    <button name="action_recheck" type="object" string="Periksa ulang" class="btn-primary"/>
+                    <field name="status" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Lokal">
+                            <field name="outlet_id"/>
+                            <field name="business_date"/>
+                            <field name="closing_version"/>
+                            <field name="closed_at"/>
+                            <field name="local_orders"/>
+                            <field name="local_net"/>
+                            <field name="local_returns"/>
+                            <field name="local_returns_net"/>
+                            <field name="shifts"/>
+                            <field name="open_shifts"/>
+                            <field name="cash_difference"/>
+                        </group>
+                        <group string="Central">
+                            <field name="central_orders"/>
+                            <field name="central_net"/>
+                            <field name="missing_doc_nos" widget="text"/>
+                            <field name="extra_doc_nos" widget="text"/>
+                            <field name="checked_at"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_day_reconciliation" model="ir.actions.act_window">
+        <field name="name">Rekonsiliasi tutup hari</field>
+        <field name="res_model">rasentra.day.reconciliation</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_day_reconciliation" action="action_day_reconciliation"
+              parent="rasentra_core.menu_rasentra_monitoring" sequence="20"/>
+</odoo>

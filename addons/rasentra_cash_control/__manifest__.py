@@ -8,6 +8,7 @@
     "depends": ["rasentra_pos_meatshop"],
     "data": [
         "data/config_data.xml",
+        "data/cron.xml",
         "views/pos_session_views.xml",
     ],
     "assets": {
