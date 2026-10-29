@@ -14,6 +14,7 @@
         "rasentra_mobile_terminal",
         "rasentra_cash_control",
         "rasentra_payment_qris",
+        "rasentra_migration",
     ],
     "post_init_hook": "post_init_hook",
     "installable": True,

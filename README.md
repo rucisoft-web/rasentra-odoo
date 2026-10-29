@@ -25,6 +25,7 @@ Central dan Lokal). POS, dapur, inventaris, promo dan integrasi SAP menyusul di 
 | `addons/rasentra_sap_xml` | Impor NMEXML MSI/MSR aman ke staging, dedup, selisih pembulatan, jalur posting. |
 | `addons/rasentra_monitor`, `addons/rasentra_dashboard` | Status Central dan dashboard grup. |
 | `addons/rasentra_theme`, `addons/rasentra_docs` | Tema ringan food specialist; menu Spesifikasi & Panduan. |
+| `addons/rasentra_migration` | Menu Migrasi: gelombang cut-over H−45 s/d H+30 (Raptor/SAP B1, Rene POS/Accurate), template CSV dan impor data awal yang diperiksa dulu. |
 | `addons/rasentra_demo`, `rasentra_demo_solo`, `rasentra_demo_lombok` | Data demo grup, CV Solo dan CV Lombok (terpisah). |
 | `oca/` | Submodule OCA cabang 18.0: `queue`, `rest-framework`, `web-api`, `server-tools` |
 | `config/` | Konfigurasi Odoo untuk profil Central dan Lokal |
