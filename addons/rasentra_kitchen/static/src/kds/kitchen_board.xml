@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="rasentra_kitchen.Board">
+        <div class="o_rasentra_kds d-flex flex-column h-100">
+            <div class="o_rasentra_kds_bar d-flex flex-wrap align-items-center gap-2 px-3 py-2">
+                <span class="o_rasentra_kds_brand me-2">Rasentra Kitchen</span>
+                <span t-if="state.board" class="text-muted me-3" t-esc="state.board.outlet.name"/>
+                <div class="btn-group">
+                    <button t-foreach="[['station','Station'],['expeditor','Expeditor'],['queue','Antrean'],['analytics','Analisis'],['production','Produksi']]"
+                            t-as="tab" t-key="tab[0]" class="btn btn-sm"
+                            t-att-class="state.view === tab[0] ? 'btn-primary' : 'btn-outline-secondary'"
+                            t-on-click="() => this.setView(tab[0])" t-esc="tab[1]"/>
+                </div>
+                <div t-if="state.view === 'station' and state.board" class="btn-group ms-2">
+                    <button t-foreach="state.board.stations" t-as="st" t-key="st.code" class="btn btn-sm"
+                            t-att-class="state.station === st.code ? 'btn-dark' : 'btn-outline-dark'"
+                            t-on-click="() => this.setStation(st.code)">
+                        <t t-esc="st.name"/> <small class="opacity-75">(<t t-esc="st.target_minutes"/>′)</small>
+                    </button>
+                </div>
+                <input t-if="['station','expeditor'].includes(state.view)" class="form-control form-control-sm ms-auto o_rasentra_bump"
+                       placeholder="Scan kode bump tiket" t-model="state.bumpCode" t-on-keydown="onBumpCode"/>
+            </div>
+
+            <div class="o_rasentra_kds_body flex-grow-1 overflow-auto p-3">
+                <!-- Papan station dan expeditor -->
+                <t t-if="['station','expeditor'].includes(state.view) and state.board">
+                    <div t-if="!state.board.tickets.length" class="o_rasentra_empty text-center text-muted py-5">
+                        Tidak ada tiket aktif.
+                    </div>
+                    <div class="o_rasentra_cards">
+                        <div t-foreach="state.board.tickets" t-as="card" t-key="card.id or card.order_uuid"
+                             class="o_rasentra_card" t-att-class="'level-' + level(card) + (card.complete ? ' complete' : '')">
+                            <div class="o_rasentra_card_head d-flex justify-content-between align-items-center"
+                                 t-on-click="() => card.id ? this.bumpTicket(card.id) : null">
+                                <div>
+                                    <div class="fw-bold fs-5" t-esc="card.label"/>
+                                    <small t-if="card.bump_code" class="opacity-75">#<t t-esc="card.sequence"/> · <t t-esc="card.bump_code"/></small>
+                                    <small t-if="card.complete" class="badge bg-success ms-1">Lengkap</small>
+                                </div>
+                                <div class="o_rasentra_timer" t-esc="fmt(elapsed(card))"/>
+                            </div>
+                            <ul class="list-unstyled mb-0">
+                                <li t-foreach="card.items" t-as="item" t-key="item.id" class="o_rasentra_item d-flex align-items-start gap-2"
+                                    t-att-class="'status-' + item.status">
+                                    <span class="o_rasentra_qty" t-esc="item.quantity"/>
+                                    <div class="flex-grow-1" t-on-click="() => item.status === 'cancel_requested' ? null : this.bumpItem(item)">
+                                        <div class="fw-semibold" t-esc="item.instructions.product"/>
+                                        <div class="small text-muted" t-esc="instructionText(item.instructions)"/>
+                                        <div t-if="item.station and !card.id" class="small">Station: <t t-esc="item.station"/></div>
+                                        <div t-if="item.cancel_reason" class="small text-danger" t-esc="item.cancel_reason"/>
+                                    </div>
+                                    <span class="badge o_rasentra_badge" t-esc="statusLabels[item.status]"/>
+                                    <button t-if="item.status === 'ready' and !expeditor" class="btn btn-sm btn-link p-0" t-on-click="() => this.recall(item)">Recall</button>
+                                    <button t-if="item.status === 'cancel_requested'" class="btn btn-sm btn-danger" t-on-click="() => this.confirmCancel(item)">Konfirmasi batal</button>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- Antrean pickup -->
+                <div t-if="state.view === 'queue' and state.queue" class="row o_rasentra_queue">
+                    <div class="col-6">
+                        <h3>Disiapkan</h3>
+                        <div class="d-flex flex-wrap gap-3">
+                            <div t-foreach="state.queue.preparing" t-as="q" t-key="q.no" class="o_rasentra_queue_no" t-esc="q.no"/>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <h3 class="text-success">Siap diambil</h3>
+                        <div class="d-flex flex-wrap gap-3">
+                            <div t-foreach="state.queue.ready" t-as="q" t-key="q.no" class="o_rasentra_queue_no ready" t-att-class="q.served ? 'served' : ''" t-esc="q.no"/>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analisis waktu saji -->
+                <div t-if="state.view === 'analytics' and state.analytics" class="o_rasentra_analytics">
+                    <p class="text-muted">7 hari terakhir · <t t-esc="state.analytics.overall.count"/> item · rata-rata <t t-esc="fmt(state.analytics.overall.avg_seconds)"/> · p90 <t t-esc="fmt(state.analytics.overall.p90_seconds)"/></p>
+                    <h5>Per station</h5>
+                    <table class="table table-sm">
+                        <thead><tr><th>Station</th><th>Item</th><th>Rata-rata</th><th>p50</th><th>p90</th><th>Tunggu</th><th>Masak</th><th>Target</th><th>Terlambat</th></tr></thead>
+                        <tbody>
+                            <tr t-foreach="state.analytics.by_station" t-as="r" t-key="r.station">
+                                <td t-esc="r.station"/><td t-esc="r.count"/><td t-esc="fmt(r.avg_seconds)"/><td t-esc="fmt(r.p50_seconds)"/>
+                                <td t-esc="fmt(r.p90_seconds)"/><td t-esc="fmt(r.avg_wait_seconds)"/><td t-esc="fmt(r.avg_cook_seconds)"/>
+                                <td t-esc="fmt(r.target_seconds)"/><td t-esc="r.late"/>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <h5>Per menu</h5>
+                    <table class="table table-sm">
+                        <thead><tr><th>Menu</th><th>Item</th><th>Rata-rata</th><th>p90</th></tr></thead>
+                        <tbody>
+                            <tr t-foreach="state.analytics.by_product" t-as="r" t-key="r.product">
+                                <td t-esc="r.product"/><td t-esc="r.count"/><td t-esc="fmt(r.avg_seconds)"/><td t-esc="fmt(r.p90_seconds)"/>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <h5>Per jam</h5>
+                    <table class="table table-sm">
+                        <thead><tr><th>Jam</th><th>Item</th><th>Rata-rata</th><th>p90</th></tr></thead>
+                        <tbody>
+                            <tr t-foreach="state.analytics.by_hour" t-as="r" t-key="r.hour">
+                                <td><t t-esc="r.hour"/>:00</td><td t-esc="r.count"/><td t-esc="fmt(r.avg_seconds)"/><td t-esc="fmt(r.p90_seconds)"/>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Produksi batch resep berstok -->
+                <div t-if="state.view === 'production' and state.production" class="o_rasentra_production" style="max-width: 720px">
+                    <h4>Produksi resep berstok</h4>
+                    <p class="text-muted">Susut di atas <t t-esc="state.production.tolerance_percent"/>% wajib memilih alasan.</p>
+                    <label class="form-label">Resep</label>
+                    <select class="form-select mb-2" t-model="state.produce.version_id">
+                        <option value="">Pilih resep</option>
+                        <option t-foreach="state.production.recipes" t-as="r" t-key="r.id" t-att-value="r.id" t-esc="r.name"/>
+                    </select>
+                    <t t-if="selectedRecipe">
+                        <div class="row g-2 mb-2">
+                            <div class="col"><label class="form-label">Jumlah dibuat (<t t-esc="selectedRecipe.uom"/>)</label>
+                                <input class="form-control" t-model="state.produce.quantity" placeholder="mis. 2"/></div>
+                            <div class="col"><label class="form-label">Hasil timbang aktual</label>
+                                <input class="form-control" t-model="state.produce.actual_output"/></div>
+                        </div>
+                        <table class="table table-sm">
+                            <thead><tr><th>Bahan</th><th>Standar per hasil <t t-esc="selectedRecipe.yield"/></th><th>Aktual (kosong = sesuai resep)</th></tr></thead>
+                            <tbody>
+                                <tr t-foreach="selectedRecipe.inputs" t-as="i" t-key="i.product_id">
+                                    <td t-esc="i.name"/><td><t t-esc="i.quantity"/> <t t-esc="i.uom"/></td>
+                                    <td><input class="form-control form-control-sm" t-model="state.produce.inputs[i.product_id]"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <label class="form-label">Alasan susut</label>
+                        <select class="form-select mb-3" t-model="state.produce.loss_reason">
+                            <option value="">Tidak ada</option>
+                            <option t-foreach="state.production.loss_reasons" t-as="r" t-key="r" t-att-value="r" t-esc="r"/>
+                        </select>
+                        <button class="btn btn-primary" t-on-click="produce">Catat produksi</button>
+                    </t>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

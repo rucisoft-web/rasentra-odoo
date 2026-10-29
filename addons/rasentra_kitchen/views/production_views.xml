@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_production_batch_list" model="ir.ui.view">
+        <field name="name">rasentra.production.batch.list</field>
+        <field name="model">rasentra.production.batch</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0">
+                <field name="produced_at"/><field name="doc_no"/><field name="outlet_id"/><field name="kind"/>
+                <field name="recipe_version_id"/><field name="loss_quantity"/><field name="loss_percent"/>
+                <field name="loss_reason"/><field name="employee_id"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_production_batch_form" model="ir.ui.view">
+        <field name="name">rasentra.production.batch.form</field>
+        <field name="model">rasentra.production.batch</field>
+        <field name="arch" type="xml">
+            <form create="0" edit="0">
+                <sheet>
+                    <h1><field name="doc_no"/></h1>
+                    <group>
+                        <group><field name="outlet_id"/><field name="kind"/><field name="recipe_version_id"/><field name="employee_id"/></group>
+                        <group><field name="expected_quantity"/><field name="loss_quantity"/><field name="loss_percent"/><field name="loss_reason"/></group>
+                    </group>
+                    <field name="summary"/>
+                    <field name="notes"/>
+                    <field name="adjustment_id"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="view_production_wizard_form" model="ir.ui.view">
+        <field name="name">rasentra.production.wizard.form</field>
+        <field name="model">rasentra.production.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Potong &amp; porsi">
+                <group>
+                    <field name="outlet_id"/>
+                    <field name="loss_preview"/>
+                    <field name="loss_reason"/>
+                </group>
+                <separator string="Bahan masuk (timbang)"/>
+                <field name="input_ids" context="{'default_side': 'input'}">
+                    <list editable="bottom"><field name="side" column_invisible="1"/><field name="product_id"/><field name="quantity"/></list>
+                </field>
+                <separator string="Hasil (timbang)"/>
+                <field name="output_ids" context="{'default_side': 'output'}">
+                    <list editable="bottom"><field name="side" column_invisible="1"/><field name="product_id"/><field name="quantity"/><field name="kind"/></list>
+                </field>
+                <field name="notes" placeholder="Catatan"/>
+                <footer>
+                    <button name="action_record" type="object" string="Catat produksi" class="btn-primary"/>
+                    <button special="cancel" string="Batal"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record id="action_production_batch" model="ir.actions.act_window">
+        <field name="name">Produksi batch</field>
+        <field name="res_model">rasentra.production.batch</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_production_wizard" model="ir.actions.act_window">
+        <field name="name">Catat potong &amp; porsi</field>
+        <field name="res_model">rasentra.production.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+    <menuitem id="menu_production_wizard" action="action_production_wizard" parent="rasentra_recipe.menu_rasentra_kitchen_master" sequence="30"/>
+    <menuitem id="menu_production_batch" action="action_production_batch" parent="rasentra_recipe.menu_rasentra_kitchen_master" sequence="35"/>
+</odoo>

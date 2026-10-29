@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="param_warn_ratio" model="ir.config_parameter">
+        <field name="key">rasentra.kitchen.warn_ratio</field>
+        <field name="value">0.75</field>
+    </record>
+    <record id="param_queue_linger" model="ir.config_parameter">
+        <field name="key">rasentra.kitchen.queue_linger_minutes</field>
+        <field name="value">3</field>
+    </record>
+</odoo>
