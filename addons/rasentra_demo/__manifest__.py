@@ -8,6 +8,7 @@
     "depends": [
         "l10n_id",
         "rasentra_theme",
+        "rasentra_docs",
         "rasentra_dashboard",
         "rasentra_sap_xml",
         "rasentra_mobile_terminal",

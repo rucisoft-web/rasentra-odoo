@@ -106,6 +106,7 @@ def _user(env, module, key, name, login, groups, companies, company):
         "company_id": company.id, "company_ids": [(6, 0, companies.ids)],
         "groups_id": [(6, 0, [env.ref(g).id for g in groups + ["base.group_user"]])],
         "tz": "Asia/Jakarta",
+        "lang": "id_ID" if env["res.lang"]._lang_get("id_ID") else "en_US",
     })
     return xmlid(env, module, f"user_{key}", user)
 
@@ -117,12 +118,13 @@ def build_base(env):
     params = env["ir.config_parameter"].sudo()
     # Demo laptop = satu database berperan Central (laporan HQ, publikasi master, SAP simulasi).
     params.set_param("rasentra.profile", "central")
-    for lang in ("id_ID",):
-        if not env["res.lang"].with_context(active_test=False).search([("code", "=", lang), ("active", "=", True)]):
-            try:
-                env["res.lang"]._activate_lang(lang)
-            except Exception:  # noqa: BLE001 - bahasa opsional
-                _logger.info("Bahasa %s tidak tersedia", lang)
+    # Antarmuka Bahasa Indonesia untuk semua pengguna demo (terjemahan Odoo standar ikut dimuat).
+    try:
+        lang = env["res.lang"]._activate_lang("id_ID")
+        env["base.language.install"].create({"lang_ids": [(6, 0, lang.ids)], "overwrite": False}).lang_install()
+        env.ref("base.user_admin").lang = "id_ID"
+    except Exception as error:  # noqa: BLE001 - bahasa opsional, demo tetap jalan
+        _logger.info("Bahasa Indonesia tidak bisa dipasang: %s", error)
 
     holding = env.ref("base.main_company")
     holding.write({"name": "Indoguna Group", "rasentra_legal_name": "Indoguna Group (pusat)",
@@ -141,7 +143,7 @@ def build_base(env):
     # Kategori POS dan produk.
     Categ = env["pos.category"]
     for key, label in CATEGORIES.items():
-        xmlid(env, module, f"pos_categ_{key}", Categ.create({"name": label}))
+        xmlid(env, module, f"pos_categ_{key}", Categ.create({"name": label, "color": 0}))
     kg, unit = _uom(env, "kg"), _uom(env, "unit")
     Product = env["product.product"].with_context(tracking_disable=True)
 
@@ -307,6 +309,7 @@ def build_company(env, module, spec):
     _promotions(env, module, spec, outlets)
     _packs(env, cenv, module, spec, outlets, employees)
     _history(env, module, spec, outlets)
+    _activity(env, module, spec, outlets)
     return company
 
 
@@ -520,6 +523,39 @@ def _history(env, module, spec, outlets):
             env["rasentra.outlet.sync.state"].sudo().heartbeat(device, {
                 "app_version": "18.0.1.0.0", "outbox": {"pending": 0, "failed": 0, "parked": 0},
                 "open_business_date": fields.Date.to_string(today), "open_shifts": 1})
+
+
+def _activity(env, module, spec, outlets):
+    """Aktivitas operasional hari ini agar setiap layar peran punya contoh: waste, hold, opname berjalan,
+    produksi saus dan (Solo) impor NMEXML."""
+    meat_outlet = next(o for o in spec["outlets"] if o.get("retail"))
+    outlet = outlets[meat_outlet["code"]]
+    emp = lambda role: env.ref(f"{module}.employee_{meat_outlet['key']}_{role}")
+    head, clerk, chef = emp("outlet_head"), emp("warehouse"), emp("chef")
+    Inventory = env["rasentra.inventory"]
+    packs = env["stock.lot"].search([("rasentra_outlet_id", "=", outlet.id),
+                                     ("pack_status", "in", ("received", "available"))],
+                                    order="name")
+    Inventory.waste(outlet, head, packs[-1].name, None, "Kemasan bocor saat display")
+    Inventory.hold(outlet, clerk, packs[-2].name, "Cek QC warna daging")
+    session = env["rasentra.count.session"].open(clerk, outlet)
+    location = env["rasentra.stock.ledger"].location(outlet, "stock")
+    for pack in packs[:8]:
+        session.record_scan(clerk, pack.name, None, location.barcode or location.name)
+    sauce = env["rasentra.recipe"].search([("product_id.default_code", "=", "SR-BLACKPEPPER")], limit=1)
+    version = sauce.version_ids.filtered(lambda v: v.state == "approved")[:1]
+    env["rasentra.production.batch"].produce_from_recipe(outlet, chef, version, "2.000", "1.985",
+                                                         loss_reason=None, notes="Produksi pagi")
+    if spec.get("xml_sample"):
+        # Contoh jalur NMEXML (cabang lama): satu hari invoice & pembayaran, termasuk selisih pembulatan Rp0,40.
+        from odoo.addons.rasentra_sap_xml.sample import build as build_sample
+
+        msi, msr = build_sample()
+        finance = env.ref("rasentra_demo.user_hq_finance")
+        Batch = env["rasentra.xml.batch"].with_user(finance).with_company(outlet.company_id)
+        Batch.import_xml(msi, "SLO_MSI_20261028.xml", "MSI")
+        Batch.import_xml(msr, "SLO_MSR_20261028.xml", "MSR")
+        Batch.import_xml(msi, "SLO_MSI_20261028_ulang.xml", "MSI")
 
 
 def _sale_payload(env, rng, outlet, day, counter, channel):

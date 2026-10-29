@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_docs_spec" model="ir.actions.client">
+        <field name="name">Spesifikasi perangkat lunak</field>
+        <field name="tag">rasentra_docs.viewer</field>
+        <field name="params" eval="{'page': 'index.html', 'anchor': 'spesifikasi'}"/>
+    </record>
+    <record id="action_docs_guide" model="ir.actions.client">
+        <field name="name">Panduan penggunaan</field>
+        <field name="tag">rasentra_docs.viewer</field>
+        <field name="params" eval="{'page': 'index.html', 'anchor': 'panduan'}"/>
+    </record>
+    <!-- Menu aplikasi terpisah agar terlihat oleh semua peran, termasuk kasir dan pelayan yang tidak
+         memiliki menu Rasentra. -->
+    <menuitem id="menu_docs_root" name="Spesifikasi &amp; Panduan" sequence="6" groups="base.group_user"
+              web_icon="rasentra_docs,static/description/icon.svg"/>
+    <menuitem id="menu_docs_spec" name="Spesifikasi" action="action_docs_spec" parent="menu_docs_root" sequence="10"/>
+    <menuitem id="menu_docs_guide" name="Panduan per peran" action="action_docs_guide" parent="menu_docs_root"
+              sequence="20"/>
+</odoo>
