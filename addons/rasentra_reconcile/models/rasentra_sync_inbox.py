@@ -13,3 +13,6 @@ class RasentraSyncInbox(models.Model):
 
     def _rasentra_handle_business_day_closed(self):
         self.env["rasentra.day.reconciliation"].sudo().record(self)
+
+    def _rasentra_handle_stock_adjusted(self):
+        self.env["rasentra.hq.stock.adjustment"].sudo().project(self)

@@ -11,6 +11,7 @@
         "data/cron.xml",
         "views/hq_order_views.xml",
         "views/day_reconciliation_views.xml",
+        "views/hq_stock_adjustment_views.xml",
     ],
     "installable": True,
 }

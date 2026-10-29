@@ -2,6 +2,8 @@ from odoo.tests import tagged
 
 from odoo.addons.rasentra_reconcile.tests.test_reconcile import TestReconcile
 
+from odoo.addons.rasentra_core.tools import uuid7
+
 from ..tools import FAKE_CONTROL
 
 
@@ -96,3 +98,28 @@ class TestSapPosting(TestReconcile):
         self.assertTrue(self.Doc.check_health()["sap_solo"]["ok"])
         FAKE_CONTROL["unreachable"] = True
         self.assertFalse(self.Doc.check_health()["sap_solo"]["ok"])
+
+    def _adjustment(self, kind, lines):
+        payload = {"id": uuid7(), "doc_no": f"SLO-MS-{kind[:2].upper()}261028-0001", "outlet_id": "SLO-MS", "kind": kind,
+                   "reason": "uji", "source": None, "business_date": "2026-10-28", "lines": lines}
+        self.send("stock.adjusted", payload, entity_type="stock_adjustment")
+        return self.env["rasentra.hq.stock.adjustment"].search([("uuid", "=", payload["id"])])
+
+    def test_stock_adjustments_become_goods_issue_and_receipt(self):
+        line = {"line_no": 1, "product_id": "SIRLOIN-AUS", "product_code": "SIRLOIN-AUS", "pack_id": "PK-9",
+                "quantity": "1.200000", "uom": "kg"}
+        waste = self._adjustment("waste", [dict(line, from_state="available", to_state=None)])
+        self.assertEqual(waste.line_ids.signed_quantity, -1.2)
+        production = self._adjustment("production", [
+            dict(line, from_state="available", to_state=None),
+            dict(line, line_no=2, pack_id=None, quantity="1.100000", from_state=None, to_state="available"),
+        ])
+        release = self._adjustment("release", [dict(line, from_state="quarantine", to_state="available")])
+        self.Doc.post_pending()
+        self.assertEqual(waste.sap_state, "posted")
+        self.assertEqual(waste.sap_document_ids.sap_object, "InventoryGenExits")
+        self.assertEqual(waste.sap_document_ids.request_payload["DocumentLines"][0]["WarehouseCode"], "WH-SLO-MS")
+        self.assertEqual(sorted(production.sap_document_ids.mapped("sap_object")), ["InventoryGenEntries", "InventoryGenExits"])
+        self.assertEqual(release.sap_state, "not_required")
+        # Event berulang tidak membuat proyeksi baru.
+        self.assertEqual(self.env["rasentra.hq.stock.adjustment"].search_count([]), 3)

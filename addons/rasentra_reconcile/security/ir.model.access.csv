@@ -12,3 +12,7 @@ access_hq_payment_admin,hq payment admin,model_rasentra_hq_order_payment,rasentr
 access_hq_payment_finance,hq payment finance,model_rasentra_hq_order_payment,rasentra_core.group_rasentra_finance,1,0,0,0
 access_reconciliation_admin,reconciliation admin,model_rasentra_day_reconciliation,rasentra_core.group_rasentra_admin,1,1,0,0
 access_reconciliation_finance,reconciliation finance,model_rasentra_day_reconciliation,rasentra_core.group_rasentra_finance,1,1,0,0
+access_hq_stock_adj_admin,hq stock adj admin,model_rasentra_hq_stock_adjustment,rasentra_core.group_rasentra_admin,1,0,0,0
+access_hq_stock_adj_finance,hq stock adj finance,model_rasentra_hq_stock_adjustment,rasentra_core.group_rasentra_finance,1,0,0,0
+access_hq_stock_adj_line_admin,hq stock adj line admin,model_rasentra_hq_stock_adjustment_line,rasentra_core.group_rasentra_admin,1,0,0,0
+access_hq_stock_adj_line_finance,hq stock adj line finance,model_rasentra_hq_stock_adjustment_line,rasentra_core.group_rasentra_finance,1,0,0,0

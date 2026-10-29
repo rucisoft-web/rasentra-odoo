@@ -42,6 +42,7 @@ class RasentraSapDocument(models.Model):
     source_uuid = fields.Char(required=True, index=True, readonly=True)
     source_ref = fields.Char(compute="_compute_source_ref", store=True)
     hq_order_id = fields.Many2one("rasentra.hq.order", readonly=True, index=True)
+    hq_stock_adjustment_id = fields.Many2one("rasentra.hq.stock.adjustment", readonly=True, index=True)
     sap_object = fields.Char(required=True, readonly=True)
     status = fields.Selection(STATUSES, default="pending", required=True, index=True, readonly=True)
     doc_entry = fields.Integer(readonly=True)
@@ -103,7 +104,7 @@ class RasentraSapDocument(models.Model):
     # ---- posting satu objek ------------------------------------------------------
 
     @api.model
-    def _post(self, company_db, source_type, source_uuid, sap_object, payload, hq_order=None):
+    def _post(self, company_db, source_type, source_uuid, sap_object, payload, hq_order=None, hq_adjustment=None):
         doc = self.sudo().search([("company_db", "=", company_db), ("source_type", "=", source_type),
                                   ("source_uuid", "=", source_uuid), ("sap_object", "=", sap_object)], limit=1)
         if not doc:
@@ -111,6 +112,7 @@ class RasentraSapDocument(models.Model):
                 "company_db": company_db, "source_type": source_type, "source_uuid": source_uuid,
                 "sap_object": sap_object, "request_payload": payload,
                 "hq_order_id": hq_order.id if hq_order else False,
+                "hq_stock_adjustment_id": hq_adjustment.id if hq_adjustment else False,
             })
         self.env.cr.execute("SELECT id FROM rasentra_sap_document WHERE id = %s FOR UPDATE", [doc.id])
         if doc.status == "posted":
@@ -198,6 +200,61 @@ class RasentraSapDocument(models.Model):
         refund = self._post(company_db, "sales_return", order.uuid, "VendorPayments",
                             self._refund_payload(company_db, order, memo), order)
         return order._set_sap_state("posted" if refund.status == "posted" else "partially_posted")
+
+    # ---- penyesuaian stok ----------------------------------------------------------
+
+    @api.model
+    def post_stock_adjustment(self, adjustment):
+        """Barang keluar (waste, opname kurang, bahan produksi) = Goods Issue (InventoryGenExits); barang
+        masuk (opname lebih, hasil produksi) = Goods Receipt (InventoryGenEntries). Lepas karantina hanya
+        memindah status di outlet, jadi tidak perlu dokumen SAP."""
+        adjustment = adjustment.sudo()
+        exits = adjustment.line_ids.filtered(lambda l: not l.to_state)
+        entries = adjustment.line_ids.filtered(lambda l: not l.from_state)
+        if not exits and not entries:
+            return adjustment._set_sap_state("not_required")
+        company_db = adjustment.outlet_id.company_id.sap_company_db
+        Exception_ = self.env["rasentra.integration.exception"].sudo()
+        if not company_db:
+            Exception_.raise_open("missing_mapping", "stock_adjustment", adjustment.uuid,
+                                  _("Perusahaan pemilik outlet belum punya database SAP."))
+            return adjustment._set_sap_state("failed")
+        missing = self._missing_mappings(company_db, adjustment.line_ids.mapped("product_code"), [])
+        if missing:
+            Exception_.raise_open("missing_mapping", "stock_adjustment", adjustment.uuid,
+                                  _("Mapping SAP %(db)s belum ada: %(m)s", db=company_db, m=", ".join(missing)), company_db)
+            return adjustment._set_sap_state("failed")
+        if not self._lock(adjustment.uuid):
+            return "locked"
+        statuses = []
+        for sap_object, lines in (("InventoryGenExits", exits), ("InventoryGenEntries", entries)):
+            if lines:
+                doc = self._post(company_db, "stock_adjustment", adjustment.uuid, sap_object,
+                                 self._stock_payload(company_db, adjustment, lines), hq_adjustment=adjustment)
+                statuses.append(doc.status)
+        posted = statuses.count("posted")
+        state = "posted" if posted == len(statuses) else ("partially_posted" if posted else statuses[0])
+        return adjustment._set_sap_state(state)
+
+    def _stock_payload(self, company_db, adjustment, lines):
+        warehouse = self._code(company_db, "outlet", adjustment.outlet_id.code).sap_code or None
+        # Akun lawan per jenis penyesuaian (mis. biaya waste); tanpa mapping memakai akun bawaan gudang.
+        account = self._code(company_db, "account", adjustment.kind).sap_code or None
+        labels = {"waste": "Waste", "count": "Selisih stok opname", "release": "Lepas karantina",
+                  "production": "Produksi dapur"}
+        return {
+            "DocDate": fields.Date.to_string(adjustment.business_date),
+            "Reference2": adjustment.doc_no,
+            "Comments": f"{labels.get(adjustment.kind, adjustment.kind)} {adjustment.doc_no}: {adjustment.reason or ''}".strip(),
+            "DocumentLines": [
+                self._compact({
+                    "ItemCode": self._code(company_db, "product", line.product_code).sap_code,
+                    "Quantity": str(line.quantity), "WarehouseCode": warehouse, "AccountCode": account,
+                    "U_POS_PACK": line.pack_code or None,
+                })
+                for line in lines
+            ],
+        }
 
     # ---- payload -----------------------------------------------------------------
 
@@ -300,6 +357,13 @@ class RasentraSapDocument(models.Model):
             state = self.post_order(order)
             summary[state] = summary.get(state, 0) + 1
             self._commit()
+        adjustments = self.env["rasentra.hq.stock.adjustment"].sudo().search(
+            [("sap_state", "in", ("pending", "failed", "partially_posted"))], order="business_date, id", limit=limit,
+        )
+        for adjustment in adjustments:
+            state = self.post_stock_adjustment(adjustment)
+            summary[state] = summary.get(state, 0) + 1
+            self._commit()
         return summary
 
     @api.model
@@ -318,6 +382,8 @@ class RasentraSapDocument(models.Model):
                 doc.write({"status": "failed", "last_error": _("Tidak ditemukan di SAP; aman diposting ulang.")})
             if doc.hq_order_id:
                 doc.hq_order_id._set_sap_state(doc.hq_order_id._sap_state_from_documents())
+            if doc.hq_stock_adjustment_id:
+                doc.hq_stock_adjustment_id._set_sap_state(doc.hq_stock_adjustment_id._sap_state_from_documents())
             self._commit()
 
     @api.model
@@ -339,4 +405,6 @@ class RasentraSapDocument(models.Model):
     def action_post_now(self):
         for order in self.hq_order_id:
             self.post_order(order)
+        for adjustment in self.hq_stock_adjustment_id:
+            self.post_stock_adjustment(adjustment)
         return True

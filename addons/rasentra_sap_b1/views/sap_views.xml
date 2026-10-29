@@ -169,4 +169,36 @@
     <menuitem id="menu_sap_document" action="action_sap_document" parent="menu_sap" sequence="10"/>
     <menuitem id="menu_integration_exception" action="action_integration_exception" parent="menu_sap" sequence="20"/>
     <menuitem id="menu_sap_mapping" action="action_sap_mapping" parent="menu_sap" sequence="30"/>
+    <record id="view_hq_stock_adjustment_form_sap" model="ir.ui.view">
+        <field name="name">rasentra.hq.stock.adjustment.form.sap</field>
+        <field name="model">rasentra.hq.stock.adjustment</field>
+        <field name="inherit_id" ref="rasentra_reconcile.view_hq_stock_adjustment_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="before">
+                <header>
+                    <button name="action_sap_post_now" type="object" string="Posting SAP sekarang" class="btn-primary"
+                            invisible="sap_state in ('posted', 'not_required')"/>
+                    <field name="sap_state" widget="statusbar" statusbar_visible="pending,posted"/>
+                </header>
+            </xpath>
+            <xpath expr="//field[@name='line_ids']" position="after">
+                <separator string="Dokumen SAP"/>
+                <field name="sap_document_ids">
+                    <list>
+                        <field name="sap_object"/><field name="status"/><field name="doc_num"/><field name="last_error"/>
+                    </list>
+                </field>
+            </xpath>
+        </field>
+    </record>
+    <record id="view_hq_stock_adjustment_list_sap" model="ir.ui.view">
+        <field name="name">rasentra.hq.stock.adjustment.list.sap</field>
+        <field name="model">rasentra.hq.stock.adjustment</field>
+        <field name="inherit_id" ref="rasentra_reconcile.view_hq_stock_adjustment_list"/>
+        <field name="arch" type="xml">
+            <field name="reason" position="after">
+                <field name="sap_state" widget="badge"/>
+            </field>
+        </field>
+    </record>
 </odoo>
