@@ -127,8 +127,19 @@ def build_base(env):
         _logger.info("Bahasa Indonesia tidak bisa dipasang: %s", error)
 
     holding = env.ref("base.main_company")
+    # Grup memakai Rupiah agar harga produk bersama tampil Rp, bukan $ bawaan base.main_company.
+    idr = env.ref("base.IDR")
+    idr.active = True
     holding.write({"name": "Indoguna Group", "rasentra_legal_name": "Indoguna Group (pusat)",
-                   "country_id": env.ref("base.id").id, "city": "Jakarta"})
+                   "country_id": env.ref("base.id").id, "city": "Jakarta", "currency_id": idr.id})
+    # Saat modul account terpasang di database kosong, Odoo menjadwalkan bagan generik (USD) untuk perusahaan
+    # induk di akhir instalasi (registry._auto_install_template). Muat bagan Indonesia sekarang dan batalkan
+    # jadwal itu agar induk tetap Rupiah.
+    if not holding.chart_template:
+        env["account.chart.template"].try_loading("id", holding, install_demo=False)
+    if hasattr(env.registry, "_auto_install_template"):
+        env.registry._auto_install_template = lambda env: None
+    holding.currency_id = idr
     companies = env["res.company"].search([])
 
     for key, name, login, groups in (
