@@ -1,0 +1,8 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_fee_rule_user,fee rule user,model_rasentra_cooking_fee_rule,rasentra_core.group_rasentra_user,1,0,0,0
+access_fee_rule_merch,fee rule merch,model_rasentra_cooking_fee_rule,rasentra_core.group_rasentra_merch,1,1,1,0
+access_fee_rule_pos,fee rule pos,model_rasentra_cooking_fee_rule,point_of_sale.group_pos_user,1,0,0,0
+access_cooking_job_user,cooking job user,model_rasentra_cooking_job,rasentra_core.group_rasentra_user,1,0,0,0
+access_cooking_job_pos,cooking job pos,model_rasentra_cooking_job,point_of_sale.group_pos_user,1,0,0,0
+access_entitlement_user,entitlement user,model_rasentra_service_entitlement,rasentra_core.group_rasentra_user,1,0,0,0
+access_entitlement_pos,entitlement pos,model_rasentra_service_entitlement,point_of_sale.group_pos_user,1,0,0,0

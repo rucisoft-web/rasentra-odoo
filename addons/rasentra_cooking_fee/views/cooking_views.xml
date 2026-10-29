@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_fee_rule_list" model="ir.ui.view">
+        <field name="name">rasentra.cooking.fee.rule.list</field>
+        <field name="model">rasentra.cooking.fee.rule</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="code"/><field name="name"/><field name="version"/><field name="outlet_id"/>
+                <field name="method"/><field name="basis"/><field name="rate"/><field name="minimum_fee"/>
+                <field name="effective_from"/><field name="effective_to"/>
+                <field name="state" widget="badge" decoration-success="state == 'published'" decoration-muted="state == 'superseded'"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_fee_rule_form" model="ir.ui.view">
+        <field name="name">rasentra.cooking.fee.rule.form</field>
+        <field name="model">rasentra.cooking.fee.rule</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_publish" type="object" string="Terbitkan" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_new_version" type="object" string="Versi baru (supersede)" invisible="state == 'draft'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="code" readonly="state != 'draft'"/>
+                            <field name="name" readonly="state != 'draft'"/>
+                            <field name="version" readonly="1"/>
+                            <field name="outlet_id" readonly="state != 'draft'"/>
+                            <field name="method" readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="basis" readonly="state != 'draft'"/>
+                            <field name="rate" readonly="state != 'draft'"/>
+                            <field name="minimum_fee" readonly="state != 'draft'"/>
+                            <field name="tiers" invisible="basis != 'tiered'" readonly="state != 'draft'"/>
+                            <field name="service_product_id" readonly="state != 'draft'"/>
+                            <field name="recipe_version_id" readonly="state != 'draft'"/>
+                            <field name="effective_from" readonly="state != 'draft'"/>
+                            <field name="effective_to" readonly="1"/>
+                        </group>
+                    </group>
+                    <field name="included_product_ids" widget="many2many_tags" readonly="state != 'draft'"/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="view_cooking_job_list" model="ir.ui.view">
+        <field name="name">rasentra.cooking.job.list</field>
+        <field name="model">rasentra.cooking.job</field>
+        <field name="arch" type="xml">
+            <list create="0">
+                <field name="create_date"/><field name="outlet_id"/><field name="lot_id"/><field name="raw_weight"/>
+                <field name="portions"/><field name="method"/><field name="doneness"/><field name="fee_amount" sum="Total"/>
+                <field name="entitlement_id"/><field name="pos_order_id"/>
+                <field name="status" widget="badge" decoration-danger="status in ('cancelled_after_cook',)" decoration-success="status == 'served'"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_cooking_job_form" model="ir.ui.view">
+        <field name="name">rasentra.cooking.job.form</field>
+        <field name="model">rasentra.cooking.job</field>
+        <field name="arch" type="xml">
+            <form create="0" edit="0">
+                <header><field name="status" widget="statusbar"/></header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="outlet_id"/><field name="lot_id"/><field name="raw_weight"/><field name="portions"/>
+                            <field name="method"/><field name="doneness"/><field name="sauce"/><field name="allergy_note"/>
+                        </group>
+                        <group>
+                            <field name="rule_id"/><field name="rule_version"/><field name="fee_amount"/>
+                            <field name="entitlement_id"/><field name="pos_order_id"/><field name="order_uuid"/>
+                            <field name="requested_by_id"/><field name="handed_over_by_id"/><field name="cancel_reason"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="view_entitlement_list" model="ir.ui.view">
+        <field name="name">rasentra.service.entitlement.list</field>
+        <field name="model">rasentra.service.entitlement</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0">
+                <field name="create_date"/><field name="receipt_order_id"/><field name="lot_id"/>
+                <field name="remaining_weight"/><field name="status" widget="badge"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_fee_rule" model="ir.actions.act_window">
+        <field name="name">Aturan cooking fee</field>
+        <field name="res_model">rasentra.cooking.fee.rule</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_cooking_job" model="ir.actions.act_window">
+        <field name="name">Cooking job</field>
+        <field name="res_model">rasentra.cooking.job</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_entitlement" model="ir.actions.act_window">
+        <field name="name">Hak layanan masak</field>
+        <field name="res_model">rasentra.service.entitlement</field>
+        <field name="view_mode">list</field>
+    </record>
+    <menuitem id="menu_fee_rule" action="action_fee_rule" parent="rasentra_core.menu_rasentra_catalog" sequence="60"/>
+    <menuitem id="menu_cooking_job" action="action_cooking_job" parent="rasentra_recipe.menu_rasentra_kitchen_master" sequence="60"/>
+    <menuitem id="menu_entitlement" action="action_entitlement" parent="rasentra_recipe.menu_rasentra_kitchen_master" sequence="65"/>
+</odoo>

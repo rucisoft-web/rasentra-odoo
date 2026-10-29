@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="product_cooking_service" model="product.product">
+        <field name="name">Jasa masak (cooking fee)</field>
+        <field name="default_code">SVC-COOK</field>
+        <field name="type">service</field>
+        <field name="rasentra_type">service</field>
+        <field name="kitchen_station">grill</field>
+        <field name="available_in_pos" eval="True"/>
+        <field name="list_price">0</field>
+        <field name="taxes_id" eval="[(5, 0, 0)]"/>
+    </record>
+</odoo>

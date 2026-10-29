@@ -127,7 +127,8 @@ class PosOrder(models.Model):
                     review.append(f"harga {line.product_id.default_code}: kasir {money(line.price_unit)}, server {price}")
             line.write({"rasentra_gross_amount": float(gross), "rasentra_line_type": line_type_of(line.product_id),
                         "rasentra_price_version_id": version.id if version else False})
-            engine_lines.append(Version.engine_line(line.uuid, line.product_id, line.qty, line.price_unit, gross))
+            if line._rasentra_promo_eligible():
+                engine_lines.append(Version.engine_line(line.uuid, line.product_id, line.qty, line.price_unit, gross))
 
         result = self.session_id._rasentra_evaluate(engine_lines)
         charged = -sum((money(l.price_subtotal_incl) for l in self.lines - sale_lines), money(0))
@@ -135,7 +136,8 @@ class PosOrder(models.Model):
             review.append(f"promo: kasir {charged}, server {result['total_discount']}")
         allocations = []
         for line in sale_lines:
-            computed = result["lines"][line.uuid]
+            computed = result["lines"].get(line.uuid) or {
+                "discount": 0, "net": line.rasentra_gross_amount, "allocations": []}
             line.write({"rasentra_discount_amount": float(money(computed["discount"])),
                         "rasentra_net_amount": float(money(computed["net"]))})
             allocations += [
@@ -251,6 +253,10 @@ class PosOrderLine(models.Model):
     @api.model
     def _load_pos_data_fields(self, config_id):
         return super()._load_pos_data_fields(config_id) + ["rasentra_promo_uuid", "rasentra_label_price"]
+
+    def _rasentra_promo_eligible(self):
+        """Baris yang ikut dihitung mesin promo. Addon lain (cooking fee) mengecualikan baris jasa."""
+        return True
 
     def _rasentra_returned_qty(self):
         done = self.env["rasentra.sales.return.line"].sudo().search(

@@ -148,7 +148,7 @@ patch(PosStore.prototype, {
                 line.delete();
             }
         }
-        const saleLines = order.lines.filter((line) => line.qty > 0);
+        const saleLines = order.lines.filter((line) => line.qty > 0 && this.rasentraPromoEligible(line));
         if (!saleLines.length) {
             return true;
         }
@@ -182,6 +182,11 @@ patch(PosStore.prototype, {
             line.rasentra_promo_uuid = promotion.uuid;
             line.full_product_name = promotion.name;
         }
+        return true;
+    },
+
+    /** Baris yang ikut mesin promo; addon cooking fee mengecualikan baris jasa memasak. */
+    rasentraPromoEligible(line) {
         return true;
     },
 
