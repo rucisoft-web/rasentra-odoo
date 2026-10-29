@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="rasentra_mobile_terminal.FloorScreen" t-inherit="pos_restaurant.FloorScreen" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('label')]" position="after">
+            <t t-set="rinfo" t-value="rasentraTableInfo(table)"/>
+            <div t-if="rinfo" class="o_rasentra_table_status position-absolute bottom-0 start-0 w-100 d-flex justify-content-center gap-1 pb-1 small fw-bold">
+                <span t-if="rinfo.status === 'billing'" class="badge text-bg-warning">Tagihan</span>
+                <span t-if="rinfo.ready" class="badge text-bg-success" t-esc="'Siap ' + rinfo.ready"/>
+                <span t-if="rinfo.cooking" class="badge text-bg-info" t-esc="'Masak ' + rinfo.cooking"/>
+                <span t-if="rinfo.unsent" class="badge text-bg-danger" t-esc="'Belum kirim ' + rinfo.unsent"/>
+            </div>
+        </xpath>
+    </t>
+</templates>
