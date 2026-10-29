@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_sap_document_admin,sap document admin,model_rasentra_sap_document,rasentra_core.group_rasentra_admin,1,1,0,0
+access_sap_document_finance,sap document finance,model_rasentra_sap_document,rasentra_core.group_rasentra_finance,1,1,0,0
+access_sap_mapping_admin,sap mapping admin,model_rasentra_sap_mapping,rasentra_core.group_rasentra_admin,1,1,1,1
+access_sap_mapping_finance,sap mapping finance,model_rasentra_sap_mapping,rasentra_core.group_rasentra_finance,1,1,1,1
+access_integration_exception_admin,integration exception admin,model_rasentra_integration_exception,rasentra_core.group_rasentra_admin,1,1,0,0
+access_integration_exception_finance,integration exception finance,model_rasentra_integration_exception,rasentra_core.group_rasentra_finance,1,1,0,0
+access_sap_fake_admin,sap fake admin,model_rasentra_sap_fake_document,rasentra_core.group_rasentra_admin,1,0,0,0
+access_sap_fake_finance,sap fake finance,model_rasentra_sap_fake_document,rasentra_core.group_rasentra_finance,1,0,0,0
