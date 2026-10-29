@@ -4,7 +4,13 @@
         background-color: #2e2420 !important;
         border-bottom: 3px solid #d9822b;
         color: #fff;
-        .btn, .pos-rightheader .btn { color: #fff; }
+        .btn:not(.btn-primary):not(.active) {
+            color: #fff !important;
+            background-color: rgba(255, 255, 255, 0.08) !important;
+            border-color: rgba(255, 255, 255, 0.16) !important;
+            .fa, i { color: #fff !important; }
+        }
+        .btn.active { background-color: #8b2e1f !important; color: #fff !important; }
     }
     .pos-content, .product-screen {
         background-color: #faf6ef;
@@ -12,4 +18,11 @@
     .product-list .product {
         border-radius: 10px;
     }
+}
+
+// Layar login karyawan POS: latar krem berpola, bukan gradasi ungu bawaan.
+.login-overlay.o_attendance_background {
+    background-color: #faf6ef !important;
+    background-image: url("/rasentra_theme/static/src/img/pattern.svg") !important;
+    background-size: 220px 220px !important;
 }

@@ -23,6 +23,7 @@
         ],
         "point_of_sale._assets_pos": [
             "rasentra_theme/static/src/scss/pos.scss",
+            "rasentra_theme/static/src/pos/navbar.xml",
         ],
     },
     "post_init_hook": "post_init_hook",
