@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_xml_import_wizard" model="ir.ui.view">
+        <field name="name">rasentra.xml.import.wizard.form</field>
+        <field name="model">rasentra.xml.import.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Impor XML NMEXML">
+                <p class="text-muted">File disimpan apa adanya dengan SHA-256. Dokumen yang nomornya sudah pernah diimpor
+                    dilewati sebagai duplikat, walau nama filenya berbeda. File dengan DOCTYPE/ENTITY ditolak.</p>
+                <group>
+                    <field name="kind" widget="radio"/>
+                    <field name="file" filename="file_name"/>
+                    <field name="file_name" invisible="1"/>
+                </group>
+                <footer>
+                    <button name="action_import" type="object" string="Impor" class="btn-primary"/>
+                    <button string="Batal" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record id="action_xml_import_wizard" model="ir.actions.act_window">
+        <field name="name">Unggah XML</field>
+        <field name="res_model">rasentra.xml.import.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+    <menuitem id="menu_xml_upload" action="action_xml_import_wizard" parent="menu_xml" sequence="5"/>
+</odoo>

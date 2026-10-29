@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_xml_batch_finance,xml batch finance,model_rasentra_xml_batch,rasentra_core.group_rasentra_finance,1,0,0,0
+access_xml_document_finance,xml document finance,model_rasentra_xml_document,rasentra_core.group_rasentra_finance,1,0,0,0
+access_xml_line_finance,xml line finance,model_rasentra_xml_line,rasentra_core.group_rasentra_finance,1,0,0,0
+access_xml_wizard_finance,xml wizard finance,model_rasentra_xml_import_wizard,rasentra_core.group_rasentra_finance,1,1,1,1
