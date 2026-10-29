@@ -35,7 +35,7 @@
                             <field name="imported_by_id"/>
                         </group>
                     </group>
-                    <div class="alert alert-danger" invisible="status != 'rejected'">
+                    <div class="alert alert-danger" role="alert" invisible="status != 'rejected'">
                         <field name="error_code"/>: <field name="error_message"/>
                     </div>
                     <field name="summary_text" nolabel="1" invisible="status != 'staged'"/>

@@ -80,7 +80,7 @@ class RasentraMonitor(models.AbstractModel):
         last = Inbox.search([], order="id desc", limit=1)
         return {
             "now": fields.Datetime.to_string(now),
-            "profile": params.get_param("rasentra.profile") or "central",
+            "profile": self.env["rasentra.profile"].get(),
             "cursor": self.env["rasentra.sync.publication"].sudo().search([], order="id desc", limit=1).id or 0,
             "outlets": self._outlets(now),
             "inbox": {
