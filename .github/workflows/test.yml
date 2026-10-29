@@ -1,0 +1,32 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  odoo:
+    runs-on: ubuntu-latest
+    container:
+      image: odoo:18.0
+      options: --user root
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: odoo
+          POSTGRES_PASSWORD: odoo
+          POSTGRES_DB: postgres
+        options: >-
+          --health-cmd "pg_isready -U odoo" --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - name: Siapkan git
+        run: apt-get update && apt-get install -y --no-install-recommends git python3-pip
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Pasang dependensi Python
+        run: pip3 install --break-system-packages -r requirements.txt
+      - name: Jalankan tes Rasentra
+        run: scripts/run-tests.sh --db_host=postgres --db_port=5432 --db_user=odoo --db_password=odoo

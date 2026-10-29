@@ -1,0 +1,13 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_region_user,region user,model_rasentra_region,group_rasentra_user,1,0,0,0
+access_region_admin,region admin,model_rasentra_region,group_rasentra_admin,1,1,1,1
+access_outlet_user,outlet user,model_rasentra_outlet,group_rasentra_user,1,0,0,0
+access_outlet_admin,outlet admin,model_rasentra_outlet,group_rasentra_admin,1,1,1,0
+access_device_head,device head,model_rasentra_device,group_rasentra_outlet_head,1,0,0,0
+access_device_admin,device admin,model_rasentra_device,group_rasentra_admin,1,1,1,0
+access_price_version_user,price version user,model_rasentra_price_version,group_rasentra_user,1,0,0,0
+access_price_version_merch,price version merch,model_rasentra_price_version,group_rasentra_merch,1,1,1,1
+access_price_item_user,price item user,model_rasentra_price_item,group_rasentra_user,1,0,0,0
+access_price_item_merch,price item merch,model_rasentra_price_item,group_rasentra_merch,1,1,1,1
+access_audit_head,audit head,model_rasentra_audit_event,group_rasentra_outlet_head,1,0,0,0
+access_audit_finance,audit finance,model_rasentra_audit_event,group_rasentra_finance,1,0,0,0

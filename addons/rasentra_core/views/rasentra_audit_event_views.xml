@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_audit_event_list" model="ir.ui.view">
+        <field name="name">rasentra.audit.event.list</field>
+        <field name="model">rasentra.audit.event</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0" delete="0">
+                <field name="created_at"/>
+                <field name="outlet_id"/>
+                <field name="action"/>
+                <field name="subject_model"/>
+                <field name="subject_ref"/>
+                <field name="actor_id"/>
+                <field name="approver_employee_id"/>
+                <field name="reason"/>
+                <field name="amount"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_audit_event_form" model="ir.ui.view">
+        <field name="name">rasentra.audit.event.form</field>
+        <field name="model">rasentra.audit.event</field>
+        <field name="arch" type="xml">
+            <form create="0" edit="0" delete="0">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="created_at"/>
+                            <field name="action"/>
+                            <field name="outlet_id"/>
+                            <field name="subject_model"/>
+                            <field name="subject_ref"/>
+                        </group>
+                        <group>
+                            <field name="actor_id"/>
+                            <field name="actor_employee_id"/>
+                            <field name="approver_employee_id"/>
+                            <field name="reason"/>
+                            <field name="amount"/>
+                            <field name="correlation_id"/>
+                        </group>
+                    </group>
+                    <field name="details"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="view_audit_event_search" model="ir.ui.view">
+        <field name="name">rasentra.audit.event.search</field>
+        <field name="model">rasentra.audit.event</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="action"/>
+                <field name="subject_ref"/>
+                <field name="outlet_id"/>
+                <group>
+                    <filter name="group_action" string="Aksi" context="{'group_by': 'action'}"/>
+                    <filter name="group_outlet" string="Outlet" context="{'group_by': 'outlet_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <record id="action_audit_event" model="ir.actions.act_window">
+        <field name="name">Log audit</field>
+        <field name="res_model">rasentra.audit.event</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <menuitem id="menu_audit_event" name="Log audit" parent="menu_rasentra_monitoring" action="action_audit_event" sequence="90"
+              groups="group_rasentra_finance,group_rasentra_outlet_head"/>
+</odoo>

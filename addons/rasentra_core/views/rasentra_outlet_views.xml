@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_outlet_list" model="ir.ui.view">
+        <field name="name">rasentra.outlet.list</field>
+        <field name="model">rasentra.outlet</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="company_id"/>
+                <field name="region_id"/>
+                <field name="tz"/>
+                <field name="has_retail"/>
+                <field name="has_restaurant"/>
+                <field name="has_cooking_fee"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_outlet_form" model="ir.ui.view">
+        <field name="name">rasentra.outlet.form</field>
+        <field name="model">rasentra.outlet</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <widget name="web_ribbon" title="Nonaktif" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title"><h1><field name="name" placeholder="Nama outlet"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="company_id"/>
+                            <field name="region_id"/>
+                            <field name="tz"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="warehouse_id"/>
+                            <field name="sap_warehouse_code"/>
+                            <field name="retail_name"/>
+                            <field name="restaurant_name"/>
+                            <field name="has_retail"/>
+                            <field name="has_restaurant"/>
+                            <field name="has_cooking_fee"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Lokasi" name="locations">
+                            <field name="location_ids">
+                                <list>
+                                    <field name="complete_name"/>
+                                    <field name="rasentra_type"/>
+                                    <field name="active"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Perangkat" name="devices">
+                            <field name="device_ids">
+                                <list>
+                                    <field name="code"/>
+                                    <field name="name"/>
+                                    <field name="app"/>
+                                    <field name="last_seen_at"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Info" name="info">
+                            <group><field name="uuid"/></group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="action_outlet" model="ir.actions.act_window">
+        <field name="name">Outlet</field>
+        <field name="res_model">rasentra.outlet</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="view_region_list" model="ir.ui.view">
+        <field name="name">rasentra.region.list</field>
+        <field name="model">rasentra.region</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="company_id"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_region" model="ir.actions.act_window">
+        <field name="name">Wilayah</field>
+        <field name="res_model">rasentra.region</field>
+        <field name="view_mode">list</field>
+    </record>
+    <record id="view_location_form_rasentra" model="ir.ui.view">
+        <field name="name">stock.location.form.rasentra</field>
+        <field name="model">stock.location</field>
+        <field name="inherit_id" ref="stock.view_location_form"/>
+        <field name="arch" type="xml">
+            <field name="usage" position="after">
+                <field name="rasentra_outlet_id"/>
+                <field name="rasentra_type"/>
+            </field>
+        </field>
+    </record>
+    <menuitem id="menu_outlet" name="Outlet" parent="menu_rasentra_master" action="action_outlet" sequence="10"/>
+    <menuitem id="menu_region" name="Wilayah" parent="menu_rasentra_master" action="action_region" sequence="20"/>
+</odoo>

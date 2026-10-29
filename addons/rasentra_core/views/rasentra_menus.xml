@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_rasentra_root" name="Rasentra" sequence="5" groups="group_rasentra_user"/>
+    <menuitem id="menu_rasentra_master" name="Master" parent="menu_rasentra_root" sequence="10"/>
+    <menuitem id="menu_rasentra_catalog" name="Katalog &amp; harga" parent="menu_rasentra_root" sequence="20"/>
+    <menuitem id="menu_rasentra_monitoring" name="Monitoring" parent="menu_rasentra_root" sequence="80"/>
+</odoo>

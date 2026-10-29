@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_device_list" model="ir.ui.view">
+        <field name="name">rasentra.device.list</field>
+        <field name="model">rasentra.device</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="outlet_id"/>
+                <field name="app"/>
+                <field name="has_token"/>
+                <field name="last_seen_at"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_device_form" model="ir.ui.view">
+        <field name="name">rasentra.device.form</field>
+        <field name="model">rasentra.device</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_rotate_token" type="object" string="Buat token baru" class="btn-primary"
+                            confirm="Token lama berhenti berlaku. Lanjutkan?" groups="rasentra_core.group_rasentra_admin"/>
+                    <button name="action_revoke" type="object" string="Cabut" invisible="not active"
+                            confirm="Perangkat tidak bisa memanggil API lagi. Lanjutkan?" groups="rasentra_core.group_rasentra_admin"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="name"/>
+                            <field name="outlet_id"/>
+                            <field name="app"/>
+                        </group>
+                        <group>
+                            <field name="active"/>
+                            <field name="has_token"/>
+                            <field name="last_seen_at"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_device" model="ir.actions.act_window">
+        <field name="name">Perangkat</field>
+        <field name="res_model">rasentra.device</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'active_test': False}</field>
+    </record>
+    <menuitem id="menu_device" name="Perangkat" parent="menu_rasentra_master" action="action_device" sequence="30"/>
+</odoo>

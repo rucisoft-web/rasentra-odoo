@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_price_version_list" model="ir.ui.view">
+        <field name="name">rasentra.price.version.list</field>
+        <field name="model">rasentra.price.version</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="state == 'draft'">
+                <field name="code"/>
+                <field name="outlet_id"/>
+                <field name="channel"/>
+                <field name="effective_from"/>
+                <field name="effective_to"/>
+                <field name="state" widget="badge" decoration-success="state == 'published'"/>
+                <field name="published_by"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_price_version_form" model="ir.ui.view">
+        <field name="name">rasentra.price.version.form</field>
+        <field name="model">rasentra.price.version</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_publish" type="object" string="Publikasikan" class="btn-primary"
+                            invisible="state != 'draft'" confirm="Versi yang dipublikasi tidak bisa diubah lagi. Lanjutkan?"/>
+                    <button name="action_copy_to_draft" type="object" string="Salin ke draft baru"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="code" readonly="state != 'draft'"/>
+                            <field name="outlet_id" readonly="state != 'draft'"/>
+                            <field name="channel" readonly="state != 'draft'"/>
+                            <field name="note" readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="effective_from" readonly="state != 'draft'"/>
+                            <field name="effective_to" readonly="state != 'draft'"/>
+                            <field name="published_by"/>
+                            <field name="published_at"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <field name="item_ids" readonly="state != 'draft'">
+                        <list editable="bottom">
+                            <field name="product_id"/>
+                            <field name="unit_price"/>
+                        </list>
+                    </field>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="action_price_version" model="ir.actions.act_window">
+        <field name="name">Versi harga</field>
+        <field name="res_model">rasentra.price.version</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <menuitem id="menu_price_version" name="Versi harga" parent="menu_rasentra_catalog" action="action_price_version" sequence="20"/>
+</odoo>
