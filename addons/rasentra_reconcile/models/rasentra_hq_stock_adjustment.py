@@ -30,7 +30,8 @@ class RasentraHqStockAdjustment(models.Model):
 
     @api.model
     def project(self, event):
-        payload = event.payload
+        payload = dict(event.payload or {})
+        payload.setdefault("id", event.entity_uuid)
         if self.search_count([("uuid", "=", payload["id"])]):
             return self.browse()
         outlet = self.env["rasentra.outlet"].sudo().search([("code", "=", payload["outlet_id"])], limit=1)

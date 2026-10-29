@@ -1,10 +1,14 @@
+import logging
 from datetime import datetime
 
 from odoo import api, fields, models
 
 from odoo.addons.rasentra_core.tools import money, qty
 
+_logger = logging.getLogger(__name__)
+
 KINDS = [("sale", "Penjualan"), ("return", "Retur")]
+REQUIRED = ("business_date", "gross_amount", "discount_amount", "net_amount")
 
 
 def parse_time(value):
@@ -63,7 +67,13 @@ class RasentraHqOrder(models.Model):
     @api.model
     def project(self, event):
         """Port SalesProjector::project. Idempoten per uuid dokumen, aman dijalankan ulang."""
-        payload = event.payload
+        payload = dict(event.payload or {})
+        payload.setdefault("id", event.entity_uuid)
+        missing = [key for key in REQUIRED if payload.get(key) in (None, "")]
+        if missing:
+            # Event tetap diterima inbox; dokumen tanpa nilai tidak bisa masuk laporan penjualan.
+            _logger.warning("Event %s tidak diproyeksikan, field kosong: %s", event.event_uuid, ", ".join(missing))
+            return self.browse()
         if self.search_count([("uuid", "=", payload["id"])]):
             return self.browse()
         if event.event_type == "order.returned":

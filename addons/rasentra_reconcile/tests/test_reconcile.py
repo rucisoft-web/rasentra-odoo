@@ -84,6 +84,14 @@ class TestReconcile(RasentraCase):
         self.env["rasentra.hq.order"].project(event)
         self.assertEqual(self.env["rasentra.hq.order"].search_count([("uuid", "=", payload["id"])]), 1)
 
+    def test_incomplete_payload_is_not_projected(self):
+        """Event tanpa nilai dokumen tetap diterima inbox tetapi tidak masuk laporan penjualan."""
+        Order = self.env["rasentra.hq.order"]
+        fake = type("Event", (), {"payload": {"total": "1"}, "entity_uuid": "X-1", "event_uuid": "E-1",
+                                  "event_type": "order.finalized"})()
+        self.assertFalse(Order.project(fake))
+        self.assertFalse(Order.search_count([("uuid", "=", "X-1")]))
+
     def test_waiting_then_matched_when_late_receipt_arrives(self):
         self.sale("SLO-MS-261028-00001", 300000)
         rec = self.close(["SLO-MS-261028-00001", "SLO-MS-261028-00002"], 650000)
