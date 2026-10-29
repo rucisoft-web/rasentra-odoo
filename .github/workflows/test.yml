@@ -19,7 +19,7 @@ jobs:
           POSTGRES_PASSWORD: odoo
           POSTGRES_DB: postgres
         options: >-
-          --health-cmd "pg_isready -U odoo" --health-interval 5s --health-timeout 5s --health-retries 10
+          --health-cmd "pg_isready -U odoo -d postgres" --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
       - name: Siapkan git
         run: apt-get update && apt-get install -y --no-install-recommends git python3-pip
@@ -27,6 +27,9 @@ jobs:
         with:
           submodules: true
       - name: Pasang dependensi Python
-        run: pip3 install --break-system-packages -r requirements.txt
+        # typing_extensions bawaan Debian tidak bisa di-upgrade pip, jadi versi baru dipasang di sampingnya.
+        run: |
+          pip3 install --break-system-packages --ignore-installed typing_extensions
+          pip3 install --break-system-packages -r requirements.txt
       - name: Jalankan tes Rasentra
         run: scripts/run-tests.sh --db_host=postgres --db_port=5432 --db_user=odoo --db_password=odoo
