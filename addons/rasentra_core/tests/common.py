@@ -1,12 +1,17 @@
 from odoo.tests.common import TransactionCase
 
 
-class RasentraCase(TransactionCase):
+class RasentraDataMixin:
     """Data dasar Indoguna: CV Solo dengan outlet Meatshop Solo, satu produk daging."""
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        cls._setup_rasentra_data()
+
+    @classmethod
+    def _setup_rasentra_data(cls):
+        """Dipisah agar kelas uji lain (mis. turunan TestPoSCommon) bisa memakai data yang sama."""
         cls.company = cls.env.company
         cls.company.write({"rasentra_legal_name": "CV Solo Kulina Utama", "sap_company_db": "sap_solo"})
         cls.region = cls.env["rasentra.region"].create({"code": "SLO", "name": "Solo"})
@@ -54,3 +59,7 @@ class RasentraCase(TransactionCase):
         )
         version.action_publish()
         return version
+
+
+class RasentraCase(RasentraDataMixin, TransactionCase):
+    pass
