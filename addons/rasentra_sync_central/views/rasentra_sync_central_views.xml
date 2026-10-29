@@ -118,7 +118,7 @@
         <field name="view_mode">list,form</field>
     </record>
 
-    <menuitem id="menu_sync" name="Sinkron" parent="rasentra_core.menu_rasentra_root" sequence="70"
+    <menuitem id="menu_sync" name="Sinkron Central" parent="rasentra_core.menu_rasentra_root" sequence="70"
               groups="rasentra_core.group_rasentra_admin"/>
     <menuitem id="menu_sync_state" action="action_sync_state" parent="menu_sync" sequence="10"/>
     <menuitem id="menu_sync_inbox" action="action_sync_inbox" parent="menu_sync" sequence="20"/>

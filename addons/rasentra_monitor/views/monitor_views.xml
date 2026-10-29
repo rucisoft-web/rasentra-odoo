@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_monitor_status" model="ir.actions.client">
+        <field name="name">Status Central</field>
+        <field name="tag">rasentra_monitor.status</field>
+    </record>
+    <menuitem id="menu_monitor_status" action="action_monitor_status" parent="rasentra_core.menu_rasentra_monitoring"
+              sequence="1" groups="rasentra_core.group_rasentra_finance"/>
+</odoo>

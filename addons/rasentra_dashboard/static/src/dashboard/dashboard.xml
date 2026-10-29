@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="rasentra_dashboard.Dashboard">
+        <div class="o_rasentra_page o_rasentra_dashboard h-100 overflow-auto p-3">
+            <t t-set="d" t-value="state.data"/>
+            <div class="d-flex flex-wrap align-items-end gap-2 mb-3">
+                <div class="me-auto">
+                    <div class="text-muted small text-uppercase">Indoguna Group · food specialist</div>
+                    <h2 class="mb-0">Dashboard <span class="text-muted fs-5" t-esc="d.today"/></h2>
+                </div>
+                <button class="btn btn-secondary" t-on-click="() => this.load()"><i class="fa fa-refresh me-1"/>Muat ulang</button>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-6 col-lg-3"><div class="o_rasentra_tile">
+                    <div class="o_rasentra_tile_label">Penjualan bersih hari ini</div>
+                    <div class="o_rasentra_tile_value" t-esc="rupiah(d.totals.net)"/>
+                    <div class="small text-muted">retur <t t-esc="rupiah(d.totals.returns)"/></div>
+                </div></div>
+                <div class="col-6 col-lg-3"><div class="o_rasentra_tile">
+                    <div class="o_rasentra_tile_label">Struk hari ini</div>
+                    <div class="o_rasentra_tile_value" t-esc="d.totals.orders"/>
+                    <div class="small text-muted">rata-rata <t t-esc="rupiah(d.totals.avg)"/></div>
+                </div></div>
+                <div class="col-6 col-lg-3"><div class="o_rasentra_tile">
+                    <div class="o_rasentra_tile_label">7 hari terakhir</div>
+                    <div class="o_rasentra_tile_value" t-esc="rupiah(d.week.net)"/>
+                    <div class="small text-muted"><t t-esc="d.week.orders"/> struk</div>
+                </div></div>
+                <div class="col-6 col-lg-3"><div class="o_rasentra_tile" t-att-class="{'is-err': d.exceptions}" t-on-click="() => this.openMonitor()">
+                    <div class="o_rasentra_tile_label">Perlu tindakan</div>
+                    <div class="o_rasentra_tile_value" t-esc="d.exceptions"/>
+                    <div class="small text-muted">pengecualian integrasi · buka Status Central</div>
+                </div></div>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-lg-8">
+                    <div class="o_rasentra_card p-3 h-100">
+                        <h5>Tren 7 hari</h5>
+                        <div class="o_rasentra_bars">
+                            <div class="o_rasentra_bar_col" t-foreach="d.days" t-as="day" t-key="day.date">
+                                <div class="o_rasentra_bar_value small" t-esc="rupiah(day.net)"/>
+                                <div class="o_rasentra_bar" t-attf-style="height: {{barHeight(day)}}%"/>
+                                <div class="small text-muted" t-esc="dayLabel(day.date)"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="o_rasentra_card p-3 h-100">
+                        <h5>Kanal hari ini</h5>
+                        <div t-if="!d.channels.length" class="text-muted">Belum ada struk masuk.</div>
+                        <div t-foreach="d.channels" t-as="c" t-key="c.channel" class="d-flex justify-content-between border-bottom py-2">
+                            <span t-esc="channelLabel(c.channel)"/>
+                            <span><b t-esc="rupiah(c.net)"/> <span class="small text-muted">(<t t-esc="c.orders"/>)</span></span>
+                        </div>
+                        <h5 class="mt-3">Menunggu persetujuan</h5>
+                        <div class="small">Draft harga: <b t-esc="d.price_drafts"/></div>
+                        <div class="small">Promo belum diterima outlet: <b t-esc="d.pending_receipts"/></div>
+                        <div class="small" t-foreach="d.promo_drafts" t-as="p" t-key="p.id">
+                            Promo <t t-esc="p.name"/> v<t t-esc="p.version"/> (<t t-esc="p.state"/>)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-lg-6" t-foreach="d.companies" t-as="co" t-key="co.id">
+                    <div class="o_rasentra_card p-3">
+                        <div class="d-flex justify-content-between align-items-baseline">
+                            <h5 class="mb-1" t-esc="co.name"/>
+                            <b class="fs-5" t-esc="rupiah(co.net)"/>
+                        </div>
+                        <div class="small text-muted mb-2"><t t-esc="co.orders"/> struk · SAP <code t-esc="co.sap_company_db or '-'"/></div>
+                        <table class="table table-sm mb-2">
+                            <tbody>
+                                <tr t-foreach="co.outlets" t-as="o" t-key="o.id">
+                                    <td><b t-esc="o.code"/> <span class="text-muted" t-esc="o.name"/></td>
+                                    <td class="text-end" t-esc="rupiah(o.net)"/>
+                                    <td class="text-end small" t-esc="o.orders + ' struk'"/>
+                                    <td class="text-end"><span t-attf-class="o_rasentra_health o_rasentra_health_{{o.health}}" t-att-title="o.health_label" t-esc="o.health === 'ok' ? 'Online' : o.health === 'none' ? 'Belum terhubung' : o.health === 'lost' ? 'Terputus' : 'Cek'"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="d-flex flex-wrap gap-1">
+                            <span t-foreach="sapEntries(co.sap)" t-as="s" t-key="s[0]" class="badge text-bg-light border">SAP <t t-esc="s[0]"/>: <t t-esc="s[1]"/></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

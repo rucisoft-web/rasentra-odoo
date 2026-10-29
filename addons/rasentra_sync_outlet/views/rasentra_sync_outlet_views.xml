@@ -128,7 +128,7 @@
         <field name="target">inline</field>
     </record>
 
-    <menuitem id="menu_sync_lokal" name="Sinkron" parent="rasentra_core.menu_rasentra_root" sequence="75"
+    <menuitem id="menu_sync_lokal" name="Sinkron Lokal" parent="rasentra_core.menu_rasentra_root" sequence="75"
               groups="rasentra_core.group_rasentra_admin"/>
     <menuitem id="menu_sync_console" action="action_sync_console" parent="menu_sync_lokal" sequence="10"/>
     <menuitem id="menu_outbox" action="action_outbox" parent="menu_sync_lokal" sequence="20"/>
