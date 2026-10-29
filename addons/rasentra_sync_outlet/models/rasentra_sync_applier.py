@@ -4,9 +4,13 @@ Setiap applier idempoten: dicari lewat kunci lintas-instalasi lalu dibuat atau d
 sehingga snapshot dan delta yang sama boleh diterapkan berkali-kali.
 """
 
+import logging
+
 from odoo import _, api, models
 
 from odoo.addons.rasentra_core.tools import RasentraError
+
+_logger = logging.getLogger(__name__)
 
 
 class RasentraSyncApplier(models.AbstractModel):
@@ -18,7 +22,13 @@ class RasentraSyncApplier(models.AbstractModel):
         applier = self.sudo().with_context(rasentra_sync_applying=True, active_test=False, tracking_disable=True)
         handler = getattr(applier, "_apply_" + change["entity_type"], None)
         if handler is None:
-            raise RasentraError("sync_unknown_type", _("Jenis publikasi %s belum dikenal.", change["entity_type"]))
+            model = self.env["rasentra.profile"].sync_model(change["entity_type"])
+            if model is not None:
+                handler = model.sudo().with_context(applier.env.context)._rasentra_sync_apply
+        if handler is None:
+            # Jenis baru dari Central yang belum dikenal Lokal ini: dilewati, cursor tetap maju (sama dengan Laravel).
+            _logger.info("Publikasi %s dilewati: jenis belum dikenal", change["entity_type"])
+            return
         with self.env.cr.savepoint():
             handler(change["payload"])
 

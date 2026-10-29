@@ -12,10 +12,9 @@ class RasentraSyncPublication(models.Model):
     _description = "Publikasi master Rasentra"
     _order = "id"
 
-    entity_type = fields.Selection(
-        [("outlet", "Outlet"), ("product", "Produk"), ("employee", "Petugas"), ("price_version", "Versi harga")],
-        required=True, index=True, readonly=True,
-    )
+    # Char, bukan Selection: addon lain (promo, resep) menambah jenis tanpa bergantung pada addon ini.
+    entity_type = fields.Char(required=True, index=True, readonly=True,
+                              help="outlet, product, employee, price_version, promotion_version, ...")
     entity_key = fields.Char(required=True, index=True, readonly=True)
     payload = fields.Json(required=True, readonly=True)
     outlet_ids = fields.Many2many("rasentra.outlet", string="Outlet tujuan", readonly=True,
@@ -85,4 +84,10 @@ class RasentraSyncPublication(models.Model):
             {"id": None, "entity_type": "price_version", "entity_key": v.uuid, "payload": v._rasentra_sync_payload()}
             for v in versions
         ]
+        for model in self.env["rasentra.profile"].sync_models():
+            if hasattr(model, "_rasentra_sync_snapshot"):
+                changes += [
+                    {"id": None, "entity_type": model._rasentra_sync_entity, "entity_key": key, "payload": payload}
+                    for key, payload in model.sudo()._rasentra_sync_snapshot(outlet)
+                ]
         return {"outlet_code": outlet.code, "cursor": last.id or 0, "changes": changes}

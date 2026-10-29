@@ -48,6 +48,11 @@ class RasentraOutletSyncState(models.Model):
     def ack(self, device, data):
         """Port SyncController::ack."""
         acks = data.get("acks") or []
+        profile = self.env["rasentra.profile"]
+        for item in acks:
+            model = profile.sync_model(item.get("entity_type"))
+            if model is not None and hasattr(model, "_rasentra_sync_ack"):
+                model.sudo()._rasentra_sync_ack(device, item)
         failed = next((a for a in acks if a.get("status") == "failed"), None)
         state = self._for(device)
         vals = {

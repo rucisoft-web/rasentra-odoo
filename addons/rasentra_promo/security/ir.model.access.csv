@@ -1,0 +1,11 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_promotion_user,promotion user,model_rasentra_promotion,rasentra_core.group_rasentra_user,1,0,0,0
+access_promotion_merch,promotion merch,model_rasentra_promotion,rasentra_core.group_rasentra_merch,1,1,1,0
+access_promotion_version_user,promotion version user,model_rasentra_promotion_version,rasentra_core.group_rasentra_user,1,0,0,0
+access_promotion_version_merch,promotion version merch,model_rasentra_promotion_version,rasentra_core.group_rasentra_merch,1,1,1,1
+access_promotion_target_user,promotion target user,model_rasentra_promotion_target,rasentra_core.group_rasentra_user,1,0,0,0
+access_promotion_target_merch,promotion target merch,model_rasentra_promotion_target,rasentra_core.group_rasentra_merch,1,1,1,0
+access_promotion_simulate,promotion simulate,model_rasentra_promotion_simulate,rasentra_core.group_rasentra_merch,1,1,1,1
+access_promotion_simulate_line,promotion simulate line,model_rasentra_promotion_simulate_line,rasentra_core.group_rasentra_merch,1,1,1,1
+access_promotion_publish,promotion publish,model_rasentra_promotion_publish,rasentra_core.group_rasentra_merch,1,1,1,1
+access_promotion_stop,promotion stop,model_rasentra_promotion_stop,rasentra_core.group_rasentra_merch,1,1,1,1
