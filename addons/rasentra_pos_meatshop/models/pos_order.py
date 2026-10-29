@@ -1,6 +1,6 @@
 from odoo import _, api, fields, models
 
-from odoo.addons.rasentra_core.tools import RasentraError, money, qty
+from odoo.addons.rasentra_core.tools import RasentraError, money, qty, uuid7
 from odoo.addons.rasentra_promo.models.rasentra_promotion import line_type_of
 
 CUSTOMER_CHANNELS = ("takeaway", "delivery")
@@ -88,6 +88,9 @@ class PosOrder(models.Model):
         review = []
 
         sale_lines = self._rasentra_sale_lines()
+        # Order dari backend/impor bisa tanpa uuid baris; uuid adalah id lintas instalasi di payload.
+        for line in sale_lines.filtered(lambda l: not l.uuid):
+            line.uuid = uuid7()
         engine_lines = []
         for line in sale_lines:
             if code := line._rasentra_pack_code():

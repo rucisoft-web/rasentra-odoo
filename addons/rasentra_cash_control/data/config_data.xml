@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!-- Selisih kas di atas nilai ini butuh PIN kepala outlet saat tutup shift (sama dengan Laravel). -->
+    <record id="param_cash_difference_threshold" model="ir.config_parameter">
+        <field name="key">rasentra.cash_difference_threshold</field>
+        <field name="value">10000</field>
+    </record>
+</odoo>
