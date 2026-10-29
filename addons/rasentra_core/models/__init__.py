@@ -10,3 +10,4 @@ from . import rasentra_price_version
 from . import rasentra_audit_event
 from . import rasentra_approval
 from . import rasentra_profile
+from . import rasentra_stock_ledger

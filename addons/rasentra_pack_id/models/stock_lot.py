@@ -13,6 +13,7 @@ PACK_STATUSES = [
     ("damaged", "Rusak / karantina"),
     ("quarantine", "Karantina retur"),
     ("repacked", "Dikemas ulang"),
+    ("wasted", "Dibuang (waste)"),
 ]
 SELLABLE = ("received", "available")
 

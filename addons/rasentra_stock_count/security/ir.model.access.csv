@@ -1,0 +1,8 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_adjustment_user,adjustment user,model_rasentra_stock_adjustment,rasentra_core.group_rasentra_user,1,0,0,0
+access_adjustment_line_user,adjustment line user,model_rasentra_stock_adjustment_line,rasentra_core.group_rasentra_user,1,0,0,0
+access_count_session_user,count session user,model_rasentra_count_session,rasentra_core.group_rasentra_user,1,0,0,0
+access_count_session_inv,count session inventory,model_rasentra_count_session,rasentra_core.group_rasentra_inventory,1,1,1,0
+access_count_line_user,count line user,model_rasentra_count_line,rasentra_core.group_rasentra_user,1,0,0,0
+access_count_line_inv,count line inventory,model_rasentra_count_line,rasentra_core.group_rasentra_inventory,1,1,1,0
+access_inventory_wizard,inventory wizard,model_rasentra_inventory_wizard,rasentra_core.group_rasentra_user,1,1,1,1

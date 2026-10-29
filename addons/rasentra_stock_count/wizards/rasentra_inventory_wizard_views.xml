@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_inventory_wizard_form" model="ir.ui.view">
+        <field name="name">rasentra.inventory.wizard.form</field>
+        <field name="model">rasentra.inventory.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Rasentra Inventory" class="o_rasentra_handheld">
+                <sheet>
+                    <field name="mode" widget="radio" options="{'horizontal': true}"/>
+                    <div class="alert alert-success mt-2" role="alert" invisible="message_level != 'ok'">
+                        <field name="message" nolabel="1"/>
+                    </div>
+                    <div class="alert alert-danger mt-2" role="alert" invisible="message_level != 'error'">
+                        <field name="message" nolabel="1"/>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="outlet_id"/>
+                            <field name="employee_id"/>
+                            <field name="session_id" invisible="mode != 'count'" required="mode == 'count'"/>
+                            <field name="location_code" invisible="mode != 'count'"/>
+                            <field name="code" default_focus="1" placeholder="Scan di sini"/>
+                            <field name="quantity" invisible="mode not in ('count', 'waste', 'release')"/>
+                            <field name="source" invisible="mode != 'waste'"/>
+                            <field name="reject" invisible="mode != 'receive'"/>
+                            <field name="reason" invisible="mode in ('check', 'count') or (mode == 'receive' and not reject)"/>
+                        </group>
+                        <group invisible="mode not in ('waste', 'release')" string="PIN kepala outlet (bila petugas gudang)">
+                            <field name="approver_id"/>
+                            <field name="pin" password="True"/>
+                        </group>
+                    </group>
+                    <button name="action_process" type="object" string="Proses" class="btn-primary btn-lg w-100"/>
+                    <field name="expected_html" class="mt-3"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_inventory_wizard" model="ir.actions.act_window">
+        <field name="name">Rasentra Inventory</field>
+        <field name="res_model">rasentra.inventory.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">current</field>
+    </record>
+</odoo>

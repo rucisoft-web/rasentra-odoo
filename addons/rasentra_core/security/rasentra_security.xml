@@ -25,10 +25,20 @@
         <field name="category_id" ref="module_category_rasentra"/>
         <field name="implied_ids" eval="[(4, ref('group_rasentra_user'))]"/>
     </record>
+    <record id="group_rasentra_kitchen" model="res.groups">
+        <field name="name">Dapur</field>
+        <field name="category_id" ref="module_category_rasentra"/>
+        <field name="implied_ids" eval="[(4, ref('group_rasentra_user'))]"/>
+    </record>
+    <record id="group_rasentra_inventory" model="res.groups">
+        <field name="name">Petugas gudang</field>
+        <field name="category_id" ref="module_category_rasentra"/>
+        <field name="implied_ids" eval="[(4, ref('group_rasentra_user'))]"/>
+    </record>
     <record id="group_rasentra_admin" model="res.groups">
         <field name="name">Admin pusat</field>
         <field name="category_id" ref="module_category_rasentra"/>
-        <field name="implied_ids" eval="[(4, ref('group_rasentra_merch')), (4, ref('group_rasentra_finance')), (4, ref('group_rasentra_outlet_head'))]"/>
+        <field name="implied_ids" eval="[(4, ref('group_rasentra_merch')), (4, ref('group_rasentra_finance')), (4, ref('group_rasentra_outlet_head')), (4, ref('group_rasentra_kitchen')), (4, ref('group_rasentra_inventory'))]"/>
         <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
     </record>
 

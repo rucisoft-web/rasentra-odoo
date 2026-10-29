@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_stock_adjustment_list" model="ir.ui.view">
+        <field name="name">rasentra.stock.adjustment.list</field>
+        <field name="model">rasentra.stock.adjustment</field>
+        <field name="arch" type="xml">
+            <list create="0">
+                <field name="doc_no"/>
+                <field name="business_date"/>
+                <field name="outlet_id"/>
+                <field name="kind"/>
+                <field name="reason"/>
+                <field name="employee_id"/>
+                <field name="approver_id"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_stock_adjustment_form" model="ir.ui.view">
+        <field name="name">rasentra.stock.adjustment.form</field>
+        <field name="model">rasentra.stock.adjustment</field>
+        <field name="arch" type="xml">
+            <form create="0" edit="0">
+                <sheet>
+                    <h1><field name="doc_no"/></h1>
+                    <group>
+                        <group>
+                            <field name="outlet_id"/>
+                            <field name="kind"/>
+                            <field name="business_date"/>
+                            <field name="reason"/>
+                        </group>
+                        <group>
+                            <field name="employee_id"/>
+                            <field name="approver_id"/>
+                            <field name="source_type"/>
+                            <field name="source_ref"/>
+                            <field name="uuid"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Baris">
+                            <field name="line_ids">
+                                <list>
+                                    <field name="line_no"/>
+                                    <field name="product_id"/>
+                                    <field name="lot_id"/>
+                                    <field name="quantity"/>
+                                    <field name="uom_id"/>
+                                    <field name="from_state"/>
+                                    <field name="to_state"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Pergerakan stok">
+                            <field name="move_ids"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="view_stock_adjustment_search" model="ir.ui.view">
+        <field name="name">rasentra.stock.adjustment.search</field>
+        <field name="model">rasentra.stock.adjustment</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="doc_no"/>
+                <field name="outlet_id"/>
+                <filter name="waste" string="Waste" domain="[('kind', '=', 'waste')]"/>
+                <filter name="count" string="Opname" domain="[('kind', '=', 'count')]"/>
+                <filter name="production" string="Produksi" domain="[('kind', '=', 'production')]"/>
+                <group expand="0" string="Kelompok">
+                    <filter name="group_kind" string="Jenis" context="{'group_by': 'kind'}"/>
+                    <filter name="group_date" string="Tanggal" context="{'group_by': 'business_date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <record id="action_stock_adjustment" model="ir.actions.act_window">
+        <field name="name">Penyesuaian stok</field>
+        <field name="res_model">rasentra.stock.adjustment</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

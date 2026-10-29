@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_rasentra_inventory" name="Inventory" parent="rasentra_core.menu_rasentra_root" sequence="40"
+              groups="rasentra_core.group_rasentra_inventory,rasentra_core.group_rasentra_outlet_head"/>
+    <menuitem id="menu_inventory_handheld" name="Handheld (scan)" parent="menu_rasentra_inventory" sequence="10"
+              action="action_inventory_wizard"/>
+    <menuitem id="menu_count_session_new" name="Buka sesi opname" parent="menu_rasentra_inventory" sequence="20"
+              action="action_count_session_new"/>
+    <menuitem id="menu_count_session" name="Sesi opname" parent="menu_rasentra_inventory" sequence="30"
+              action="action_count_session"/>
+    <menuitem id="menu_stock_adjustment" name="Penyesuaian stok" parent="menu_rasentra_inventory" sequence="40"
+              action="action_stock_adjustment"/>
+</odoo>
