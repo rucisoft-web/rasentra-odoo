@@ -1,0 +1,15 @@
+// POS: navbar arang dengan garis saffron, tombol utama oxblood (dari variabel primer), latar krem.
+.pos {
+    .pos-topheader {
+        background-color: #2e2420 !important;
+        border-bottom: 3px solid #d9822b;
+        color: #fff;
+        .btn, .pos-rightheader .btn { color: #fff; }
+    }
+    .pos-content, .product-screen {
+        background-color: #faf6ef;
+    }
+    .product-list .product {
+        border-radius: 10px;
+    }
+}

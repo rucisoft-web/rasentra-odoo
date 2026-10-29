@@ -1,0 +1,37 @@
+// Sentuhan ringan: latar krem, kartu membulat, aksen saffron di navbar. Tanpa gambar besar atau font web.
+:root {
+    --rasentra-primary: #{$rasentra-oxblood};
+    --rasentra-accent: #{$rasentra-saffron};
+    --rasentra-bg: #{$rasentra-cream};
+}
+
+.o_web_client {
+    .o_navbar .o_main_navbar {
+        border-bottom: 3px solid $rasentra-saffron;
+        .o_menu_brand {
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+    }
+    .o_action_manager > .o_action > .o_content,
+    .o_action_manager .o_view_controller .o_content {
+        background-color: $rasentra-cream;
+    }
+    .o_kanban_renderer .o_kanban_record {
+        border-radius: 10px;
+    }
+    .o_form_view .o_form_sheet_bg .o_form_sheet {
+        border-radius: 12px;
+    }
+    .o_list_renderer .o_list_table thead {
+        background-color: lighten($rasentra-cream, 1%);
+    }
+    .btn-primary {
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
+    }
+}
+
+// Layar beranda aplikasi (CE): latar krem hangat.
+.o_home_menu_background, .o_home_menu {
+    background: $rasentra-cream;
+}
