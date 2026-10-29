@@ -1,3 +1,7 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_discount_allocation_user,discount allocation user,model_rasentra_discount_allocation,point_of_sale.group_pos_user,1,0,0,0
 access_discount_allocation_head,discount allocation head,model_rasentra_discount_allocation,rasentra_core.group_rasentra_outlet_head,1,0,0,0
+access_sales_return_user,sales return user,model_rasentra_sales_return,point_of_sale.group_pos_user,1,0,0,0
+access_sales_return_head,sales return head,model_rasentra_sales_return,rasentra_core.group_rasentra_outlet_head,1,0,0,0
+access_sales_return_line_user,sales return line user,model_rasentra_sales_return_line,point_of_sale.group_pos_user,1,0,0,0
+access_sales_return_line_head,sales return line head,model_rasentra_sales_return_line,rasentra_core.group_rasentra_outlet_head,1,0,0,0

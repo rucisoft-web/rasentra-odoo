@@ -5,3 +5,4 @@ from . import pos_order
 from . import product_product
 from . import rasentra_discount_allocation
 from . import hr_employee
+from . import rasentra_sales_return

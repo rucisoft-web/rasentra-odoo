@@ -1,4 +1,4 @@
-from odoo import api, fields, models
+from odoo import _, api, fields, models
 
 from odoo.addons.rasentra_core.tools import RasentraError, money, qty
 
@@ -43,6 +43,32 @@ class PosSession(models.Model):
     def rasentra_release(self, code, order_uuid, employee_id=None, reason=None):
         self.ensure_one()
         return self.env["stock.lot"].sudo().pack_release(code, order_uuid, self._rasentra_employee(employee_id), reason)
+
+    def rasentra_return_prepare(self, refund_order_uuid, original_order_id, items, reason, refund_method,
+                                employee_id=None, approval=None):
+        """Siapkan retur sebelum kasir membayar refund. Mengembalikan nilai bersih yang harus
+        dikembalikan dan koreksi promo (selisih bruto dan bersih) untuk ditulis di order refund."""
+        self.ensure_one()
+        order = self.env["pos.order"].sudo().browse(int(original_order_id)).exists()
+        if not order or order.rasentra_outlet_id != self.rasentra_outlet_id:
+            raise RasentraError("return_line_invalid", _("Struk asal tidak ditemukan di outlet ini."))
+        try:
+            ret = self.env["rasentra.sales.return"].prepare(
+                self, refund_order_uuid, order, items, reason, refund_method,
+                self._rasentra_employee(employee_id), approval,
+            )
+        except RasentraError as error:
+            if not error.context.get("approval_required"):
+                raise
+            return {"kind": "approval_required", "code": error.code, "message": str(error.args[0])}
+        return {
+            "kind": "prepared",
+            "uuid": ret.uuid,
+            "net_amount": str(money(ret.net_amount)),
+            "discount_amount": str(money(ret.discount_amount)),
+            "lines": [{"line_uuid": l.order_line_id.uuid, "qty": str(qty(l.quantity)), "net": str(money(l.net_amount))}
+                      for l in ret.line_ids],
+        }
 
     def rasentra_evaluate(self, lines):
         """Hitung promo untuk keranjang POS. `lines` = [{uuid, product_id, qty, price_unit}].

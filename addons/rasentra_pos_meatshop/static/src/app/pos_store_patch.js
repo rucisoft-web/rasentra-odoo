@@ -5,6 +5,7 @@ import { PosStore } from "@point_of_sale/app/store/pos_store";
 import { makeAwaitable } from "@point_of_sale/app/store/make_awaitable_dialog";
 import { NumberPopup } from "@point_of_sale/app/utils/input_popups/number_popup";
 import { SelectionPopup } from "@point_of_sale/app/utils/input_popups/selection_popup";
+import { TextInputPopup } from "@point_of_sale/app/utils/input_popups/text_input_popup";
 import { rasentraBridge } from "./bridge";
 
 const APPROVER_ROLES = ["outlet_head", "admin"];
@@ -151,9 +152,7 @@ patch(PosStore.prototype, {
         if (!saleLines.length) {
             return true;
         }
-        const promoProduct = this.models["product.product"].find(
-            (product) => product.default_code === PROMO_PRODUCT_CODE
-        );
+        const promoProduct = this.rasentraPromoProduct();
         let result;
         try {
             result = await this.data.call("pos.session", "rasentra_evaluate", [
@@ -186,10 +185,89 @@ patch(PosStore.prototype, {
         return true;
     },
 
+    rasentraMethodCode(method) {
+        return method.rasentra_method || (method.is_cash_count ? "cash" : "edc_manual");
+    },
+
+    /**
+     * Retur: minta alasan, metode pengembalian, dan PIN kepala outlet, lalu server menyiapkan retur
+     * dan menghitung nilai bersih. Koreksi promo ditulis sebagai baris positif agar total refund
+     * sama dengan nilai bersih yang dibayar pelanggan.
+     */
+    async rasentraPrepareReturn(order) {
+        const refundLines = order.lines.filter((line) => line.refunded_orderline_id);
+        const original = refundLines[0].refunded_orderline_id.order_id;
+        const reason = await makeAwaitable(this.dialog, TextInputPopup, {
+            title: _t("Alasan retur"),
+            placeholder: _t("Contoh: daging berbau, salah potong"),
+        });
+        if (!reason || !reason.trim()) {
+            return false;
+        }
+        const method = await makeAwaitable(this.dialog, SelectionPopup, {
+            title: _t("Uang dikembalikan lewat"),
+            list: this.config.payment_method_ids.map((pm) => ({ id: pm.id, label: pm.name, item: pm })),
+        });
+        if (!method) {
+            return false;
+        }
+        const items = refundLines.map((line) => ({
+            line_uuid: line.refunded_orderline_id.uuid,
+            qty: String(-line.qty),
+        }));
+        let approval = null;
+        let result;
+        for (;;) {
+            try {
+                result = await this.data.call("pos.session", "rasentra_return_prepare", [
+                    [this.session.id], order.uuid, original.id, items, reason, this.rasentraMethodCode(method),
+                    this.rasentraEmployeeId(), approval,
+                ]);
+            } catch (error) {
+                this.rasentraAlert(error);
+                return false;
+            }
+            if (result.kind !== "approval_required") {
+                break;
+            }
+            approval = await this.rasentraAskApproval(result.message);
+            if (!approval) {
+                return false;
+            }
+        }
+        for (const line of [...order.lines]) {
+            if (line.rasentra_promo_uuid) {
+                line.delete();
+            }
+        }
+        const correction = parseFloat(result.discount_amount);
+        if (correction) {
+            const line = await this.addLineToOrder(
+                { product_id: this.rasentraPromoProduct(), qty: 1, price_unit: correction },
+                order,
+                { merge: false },
+                false
+            );
+            line.rasentra_promo_uuid = `return:${result.uuid}`;
+            line.full_product_name = _t("Koreksi promo retur");
+        }
+        return true;
+    },
+
+    rasentraPromoProduct() {
+        return this.models["product.product"].find(
+            (product) => product.default_code === PROMO_PRODUCT_CODE
+        );
+    },
+
     async pay() {
         const order = this.get_order();
-        if (this.rasentraEnabled && order && !order.lines.some((line) => line.refunded_orderline_id)) {
-            if (!(await this.rasentraApplyPromotions(order))) {
+        if (this.rasentraEnabled && order) {
+            const isReturn = order.lines.some((line) => line.refunded_orderline_id);
+            const ok = isReturn
+                ? await this.rasentraPrepareReturn(order)
+                : await this.rasentraApplyPromotions(order);
+            if (!ok) {
                 return;
             }
         }

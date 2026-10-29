@@ -33,9 +33,30 @@ class PosOrder(models.Model):
     # ---- finalisasi -------------------------------------------------------------
 
     def _rasentra_applies(self):
-        return bool(self.config_id.rasentra_outlet_id) and not self.lines.filtered("refunded_orderline_id")
+        return bool(self.config_id.rasentra_outlet_id) and not self._rasentra_is_return()
+
+    def _rasentra_is_return(self):
+        return bool(self.lines.filtered("refunded_orderline_id"))
+
+    def _rasentra_prepared_return(self):
+        ret = self.env["rasentra.sales.return"].sudo().search(
+            [("refund_order_uuid", "=", self.uuid), ("state", "=", "prepared")], limit=1
+        )
+        if not ret:
+            raise RasentraError.needs_approval(
+                "return_not_approved", _("Retur belum disetujui kepala outlet. Ulangi dari tombol Bayar.")
+            )
+        return ret
 
     def _process_saved_order(self, draft):
+        if not draft and self.state == "draft" and self.config_id.rasentra_outlet_id and self._rasentra_is_return():
+            # Retur: order refund POS harus cocok dengan retur yang sudah disetujui (port ReturnService).
+            ret = self._rasentra_prepared_return()
+            ret._check_refund_order(self)
+            res = super()._process_saved_order(draft)
+            if self.state in ("paid", "done", "invoiced"):
+                ret._finalize(self)
+            return res
         finalize = not draft and self.state == "draft" and self._rasentra_applies()
         if finalize:
             # Diperiksa sebelum Odoo menandai lunas: kesalahan di sini membatalkan seluruh sinkron order,
@@ -230,6 +251,34 @@ class PosOrderLine(models.Model):
     @api.model
     def _load_pos_data_fields(self, config_id):
         return super()._load_pos_data_fields(config_id) + ["rasentra_promo_uuid", "rasentra_label_price"]
+
+    def _rasentra_returned_qty(self):
+        done = self.env["rasentra.sales.return.line"].sudo().search(
+            [("order_line_id", "=", self.id), ("state", "=", "done")]
+        )
+        return sum((qty(l.quantity) for l in done), qty(0))
+
+    def _rasentra_return_amounts(self, quantity, is_last):
+        """Nilai baris yang diretur, pro-rata dari nilai bersih setelah promo. Porsi terakhir
+        memakai sisa nilai agar tidak ada selisih pembulatan."""
+        self.ensure_one()
+        done = self.env["rasentra.sales.return.line"].sudo().search(
+            [("order_line_id", "=", self.id), ("state", "=", "done")]
+        )
+        if is_last:
+            return {
+                "gross": money(self.rasentra_gross_amount) - sum((money(l.gross_amount) for l in done), money(0)),
+                "net": money(self.rasentra_net_amount) - sum((money(l.net_amount) for l in done), money(0)),
+            }
+        ratio = qty(quantity) / qty(self.qty)
+        return {"gross": money(money(self.rasentra_gross_amount) * ratio),
+                "net": money(money(self.rasentra_net_amount) * ratio)}
+
+    def _rasentra_disposition(self):
+        """Jasa dan menu yang sudah dimasak tidak kembali ke stok; Pack ID selalu ke karantina."""
+        if self.rasentra_line_type in ("cooking_service", "restaurant_menu") or self.product_id.type != "consu":
+            return "none"
+        return "quarantine" if self._rasentra_pack_code() else "restock"
 
     def _rasentra_pack_code(self):
         self.ensure_one()

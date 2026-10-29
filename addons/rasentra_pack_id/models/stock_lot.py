@@ -11,6 +11,7 @@ PACK_STATUSES = [
     ("sold", "Terjual"),
     ("hold", "Ditahan"),
     ("damaged", "Rusak / karantina"),
+    ("quarantine", "Karantina retur"),
     ("repacked", "Dikemas ulang"),
 ]
 SELLABLE = ("received", "available")
@@ -177,4 +178,14 @@ class StockLot(models.Model):
                 "lock_version": pack.lock_version + 1,
             }
         )
+        return True
+
+    @api.model
+    def pack_mark_returned(self, code, return_uuid, employee=None, reason=None):
+        """Retur penjualan: Pack ID selalu masuk karantina; petugas memutuskan kembali ke stok atau waste."""
+        pack = self._lock_pack(code)
+        if pack.pack_status != "sold":
+            raise RasentraError.conflict("pack_not_sold", _("Kemasan %s tidak berstatus terjual.", code))
+        pack._pack_event("returned", "quarantine", employee, "sales_return", return_uuid, reason)
+        pack.write({"pack_status": "quarantine", "sold_line_uuid": False, "lock_version": pack.lock_version + 1})
         return True

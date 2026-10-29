@@ -7,8 +7,9 @@ from odoo.addons.rasentra_core.tests.common import RasentraDataMixin
 from odoo.addons.rasentra_core.tools import RasentraError
 
 
-@tagged("post_install", "-at_install", "rasentra")
-class TestPosMeatshop(RasentraDataMixin, TestPoSCommon):
+class PosMeatshopCase(RasentraDataMixin, TestPoSCommon):
+    """Sesi POS terbuka di outlet Meatshop Solo dengan harga sirloin Rp200.000/kg."""
+
     @classmethod
     def get_default_groups(cls):
         # Pengguna uji akuntansi Odoo juga menyiapkan master Rasentra (wilayah, outlet, harga, karyawan).
@@ -70,6 +71,9 @@ class TestPosMeatshop(RasentraDataMixin, TestPoSCommon):
         result = self.env["pos.order"].sync_from_ui([data])
         return self.env["pos.order"].browse(result["pos.order"][0]["id"])
 
+
+@tagged("post_install", "-at_install", "rasentra")
+class TestPosMeatshop(PosMeatshopCase):
     def test_u01_two_packs_finalized_to_outbox(self):
         """U01: 1,500 kg + 1,750 kg x Rp200.000 = Rp650.000; Pack ID terjual, struk bernomor, event di outbox."""
         self._pack("PK-000184", 1.5)
