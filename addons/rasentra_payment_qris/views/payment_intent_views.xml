@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_payment_intent_list" model="ir.ui.view">
+        <field name="name">rasentra.payment.intent.list</field>
+        <field name="model">rasentra.payment.intent</field>
+        <field name="arch" type="xml">
+            <list create="false" decoration-success="status == 'succeeded'" decoration-warning="status == 'uncertain'">
+                <field name="create_date"/>
+                <field name="outlet_id"/>
+                <field name="order_uuid"/>
+                <field name="method"/>
+                <field name="amount"/>
+                <field name="provider"/>
+                <field name="provider_ref"/>
+                <field name="status" widget="badge"/>
+                <button name="action_simulate_paid" type="object" string="Simulasi dibayar" icon="fa-qrcode"
+                        invisible="status not in ('pending', 'uncertain') or provider != 'simulasi'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_payment_intent" model="ir.actions.act_window">
+        <field name="name">Pembayaran QRIS/EDC</field>
+        <field name="res_model">rasentra.payment.intent</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <menuitem id="menu_payment_intent" action="action_payment_intent"
+              parent="rasentra_core.menu_rasentra_monitoring" sequence="30"/>
+</odoo>

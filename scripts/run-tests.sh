@@ -7,7 +7,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 ODOO_BIN="${ODOO_BIN:-odoo}"
 ODOO_ADDONS="${ODOO_ADDONS:-/usr/lib/python3/dist-packages/odoo/addons}"
 DB="${TEST_DB:-rasentra_test_$$}"
-MODULES="rasentra_core,rasentra_pack_id,rasentra_promo,rasentra_sync_central,rasentra_sync_outlet,rasentra_pos_meatshop,rasentra_cash_control,rasentra_reconcile,rasentra_sap_b1"
+MODULES="rasentra_core,rasentra_pack_id,rasentra_promo,rasentra_sync_central,rasentra_sync_outlet,rasentra_pos_meatshop,rasentra_cash_control,rasentra_reconcile,rasentra_sap_b1,rasentra_payment_qris"
 LOG="$(mktemp)"
 
 ADDONS_PATH="$ODOO_ADDONS,$ROOT/addons"
