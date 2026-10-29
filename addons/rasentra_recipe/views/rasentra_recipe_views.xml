@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_recipe_list" model="ir.ui.view">
+        <field name="name">rasentra.recipe.list</field>
+        <field name="model">rasentra.recipe</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="product_id"/>
+                <field name="active_version_id"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_recipe_form" model="ir.ui.view">
+        <field name="name">rasentra.recipe.form</field>
+        <field name="model">rasentra.recipe</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_new_draft" type="object" string="Buat draft versi baru" class="btn-primary"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="product_id"/>
+                        <field name="active_version_id"/>
+                    </group>
+                    <field name="version_ids">
+                        <list create="0">
+                            <field name="version"/>
+                            <field name="kind"/>
+                            <field name="yield_quantity"/>
+                            <field name="state" widget="badge" decoration-success="state == 'approved'" decoration-muted="state == 'retired'"/>
+                            <field name="edited_by_id"/>
+                            <field name="approved_by_id"/>
+                            <field name="effective_from"/>
+                        </list>
+                    </field>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="view_recipe_version_form" model="ir.ui.view">
+        <field name="name">rasentra.recipe.version.form</field>
+        <field name="model">rasentra.recipe.version</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_approve" type="object" string="Setujui" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_new_version" type="object" string="Versi baru" invisible="state == 'draft'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <h1><field name="display_name"/></h1>
+                    <group>
+                        <group>
+                            <field name="recipe_id" readonly="state != 'draft'"/>
+                            <field name="version" readonly="1"/>
+                            <field name="kind" readonly="state != 'draft'"/>
+                            <field name="yield_quantity" readonly="state != 'draft'"/>
+                            <field name="yield_uom_id" readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="effective_from" readonly="state != 'draft'"/>
+                            <field name="outlet_ids" widget="many2many_tags" readonly="state != 'draft'"/>
+                            <field name="edited_by_id"/>
+                            <field name="approved_by_id"/>
+                            <field name="uuid"/>
+                        </group>
+                    </group>
+                    <field name="line_ids" readonly="state != 'draft'">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="component_product_id"/>
+                            <field name="quantity"/>
+                            <field name="uom_id"/>
+                            <field name="modifier_key"/>
+                        </list>
+                    </field>
+                    <field name="notes" placeholder="Catatan chef" readonly="state != 'draft'"/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="view_recipe_version_list" model="ir.ui.view">
+        <field name="name">rasentra.recipe.version.list</field>
+        <field name="model">rasentra.recipe.version</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="recipe_id"/>
+                <field name="version"/>
+                <field name="kind"/>
+                <field name="state" widget="badge" decoration-success="state == 'approved'"/>
+                <field name="approved_by_id"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_recipe" model="ir.actions.act_window">
+        <field name="name">Resep</field>
+        <field name="res_model">rasentra.recipe</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_recipe_version" model="ir.actions.act_window">
+        <field name="name">Versi resep</field>
+        <field name="res_model">rasentra.recipe.version</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <menuitem id="menu_rasentra_kitchen_master" name="Dapur" parent="rasentra_core.menu_rasentra_root" sequence="30"
+              groups="rasentra_core.group_rasentra_kitchen,rasentra_core.group_rasentra_merch"/>
+    <menuitem id="menu_recipe" action="action_recipe" parent="menu_rasentra_kitchen_master" sequence="50"/>
+    <menuitem id="menu_recipe_version" action="action_recipe_version" parent="menu_rasentra_kitchen_master" sequence="55"/>
+</odoo>
