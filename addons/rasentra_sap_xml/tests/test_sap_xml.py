@@ -4,8 +4,7 @@ from odoo.addons.rasentra_core.tools import RasentraError
 from odoo.addons.rasentra_core.tests.common import RasentraCase
 from odoo.addons.rasentra_reconcile.tests.test_reconcile import TestReconcile
 
-from .. import tools
-from . import sample
+from .. import sample, tools
 
 
 @tagged("post_install", "-at_install", "rasentra")

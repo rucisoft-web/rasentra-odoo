@@ -42,20 +42,22 @@ class RasentraXmlBatch(models.Model):
     _rec_name = "file_name"
 
     kind = fields.Selection([("MSI", "MSI (invoice penjualan)"), ("MSR", "MSR (pembayaran pelanggan)")],
-                            required=True, readonly=True)
+                            string="Jenis file", required=True, readonly=True)
     file_name = fields.Char(required=True, readonly=True)
-    sha256 = fields.Char(readonly=True, index=True)
-    attachment_id = fields.Many2one("ir.attachment", readonly=True)
+    sha256 = fields.Char(readonly=True, index=True, string="SHA-256")
+    attachment_id = fields.Many2one("ir.attachment", readonly=True, string="File")
     status = fields.Selection([("received", "Diterima"), ("staged", "Staging"), ("rejected", "Ditolak")],
                               default="received", required=True, readonly=True)
     error_code = fields.Char(readonly=True)
     error_message = fields.Text(readonly=True)
-    document_count = fields.Integer(readonly=True)
-    duplicate_count = fields.Integer(readonly=True)
+    document_count = fields.Integer(readonly=True, string="Jumlah dokumen")
+    duplicate_count = fields.Integer(readonly=True, string="Duplikat")
     summary = fields.Json(readonly=True)
     summary_text = fields.Text(compute="_compute_summary_text", string="Ringkasan")
     document_ids = fields.One2many("rasentra.xml.document", "batch_id", readonly=True)
-    imported_by_id = fields.Many2one("res.users", default=lambda self: self.env.user, readonly=True)
+    imported_by_id = fields.Many2one(
+        "res.users", string="Diimpor oleh", default=lambda self: self.env.user, readonly=True
+    )
 
     def _compute_summary_text(self):
         for batch in self:
@@ -202,12 +204,12 @@ class RasentraXmlDocument(models.Model):
 
     batch_id = fields.Many2one("rasentra.xml.batch", required=True, readonly=True, ondelete="restrict", index=True)
     system = fields.Char(default="NMEXML", required=True, readonly=True)
-    branch_code = fields.Char(readonly=True, index=True)
+    branch_code = fields.Char(readonly=True, index=True, string="Kode cabang")
     doc_type = fields.Selection([("SALESINVOICE", "Invoice penjualan"), ("CUSTOMERRECEIPT", "Pembayaran pelanggan")],
-                                required=True, readonly=True, index=True)
-    source_no = fields.Char(required=True, readonly=True, index=True)
-    business_date = fields.Date(readonly=True)
-    legacy_customer_code = fields.Char(readonly=True)
+                                string="Jenis dokumen", required=True, readonly=True, index=True)
+    source_no = fields.Char(required=True, readonly=True, index=True, string="No. sumber")
+    business_date = fields.Date(readonly=True, string="Tanggal bisnis")
+    legacy_customer_code = fields.Char(readonly=True, string="Kode pelanggan lama")
     legacy_warehouse_code = fields.Char(readonly=True)
     # Disimpan sebagai teks desimal agar nilai sumber tidak tersentuh pembulatan float.
     document_total_source = fields.Char(readonly=True)

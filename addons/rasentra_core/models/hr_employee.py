@@ -38,3 +38,15 @@ class HrEmployee(models.Model):
             for employee in self.filtered(lambda e: not e.rasentra_uuid):
                 employee.rasentra_uuid = uuid7()
         return res
+
+
+class HrEmployeePublic(models.Model):
+    """Pengguna tanpa hak HR (kasir, pelayan) membaca karyawan lewat profil publik; POS dan approval
+    membutuhkan peran, outlet dan limit approval, jadi kolom ini ikut dibuka di profil publik."""
+
+    _inherit = "hr.employee.public"
+
+    rasentra_role = fields.Selection(RASENTRA_ROLES, string="Peran Rasentra", readonly=True)
+    rasentra_outlet_id = fields.Many2one("rasentra.outlet", string="Outlet Rasentra", readonly=True)
+    rasentra_uuid = fields.Char(string="UUID Rasentra", readonly=True)
+    approval_limit = fields.Float(string="Limit approval", readonly=True)

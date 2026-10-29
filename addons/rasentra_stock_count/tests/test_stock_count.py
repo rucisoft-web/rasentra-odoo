@@ -114,6 +114,17 @@ class TestStockCount(RasentraCase):
         session.review(self.head)
         self.assertEqual(session.state, "review", "tanpa selisih langsung review")
 
+    def test_scan_at_warehouse_stock_location(self):
+        """Outlet yang memakai gudang Odoo: lokasi stok gudang (tanpa penanda outlet) tetap bisa di-scan."""
+        warehouse = self.env["stock.warehouse"].search([("company_id", "=", self.company.id)], limit=1)
+        self.outlet.location_ids.filtered(lambda loc: loc.rasentra_type == "stock").rasentra_type = False
+        self.outlet.warehouse_id = warehouse
+        self.assertEqual(self.ledger.location(self.outlet, "stock"), warehouse.lot_stock_id)
+        self._put(self.butter, 5)
+        session = self.env["rasentra.count.session"].open(self.storekeeper, self.outlet)
+        line = session.record_scan(self.storekeeper, "BTR-250", 5, warehouse.lot_stock_id.name)
+        self.assertEqual(line.location_id, warehouse.lot_stock_id)
+
     def test_wizard_shows_error_without_losing_screen(self):
         wizard = self.env["rasentra.inventory.wizard"].create(
             {"mode": "receive", "outlet_id": self.outlet.id, "employee_id": self.storekeeper.id, "code": "PK-NOPE"}

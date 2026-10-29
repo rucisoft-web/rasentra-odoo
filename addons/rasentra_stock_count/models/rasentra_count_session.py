@@ -21,23 +21,24 @@ class RasentraCountSession(models.Model):
     name = fields.Char(compute="_compute_name", store=True)
     outlet_id = fields.Many2one("rasentra.outlet", required=True, readonly=True, index=True)
     count_type = fields.Selection(
-        [("full", "Penuh"), ("cycle", "Siklus"), ("special", "Khusus")], required=True, default="cycle", readonly=True
+        [("full", "Penuh"), ("cycle", "Siklus"), ("special", "Khusus")],
+        string="Jenis opname", required=True, default="cycle", readonly=True,
     )
-    blind = fields.Boolean(default=True, readonly=True)
-    cutoff_at = fields.Datetime(required=True, readonly=True, default=fields.Datetime.now)
-    recount_threshold = fields.Float(digits=(18, 6), default=0.05, readonly=True)
+    blind = fields.Boolean(default=True, readonly=True, string="Hitung buta")
+    cutoff_at = fields.Datetime(required=True, readonly=True, default=fields.Datetime.now, string="Cut-off")
+    recount_threshold = fields.Float(digits=(18, 6), default=0.05, readonly=True, string="Ambang hitung ulang")
     state = fields.Selection(
         [("counting", "Menghitung"), ("recount", "Hitung ulang"), ("review", "Review"), ("approved", "Disetujui")],
         default="counting", required=True, readonly=True, tracking=True,
     )
-    current_round = fields.Integer(default=1, readonly=True)
+    current_round = fields.Integer(default=1, readonly=True, string="Ronde")
     recount_product_ids = fields.Many2many("product.product", string="Produk hitung ulang", readonly=True)
     created_by_id = fields.Many2one("hr.employee", string="Dibuka oleh", readonly=True)
     approved_by_id = fields.Many2one("hr.employee", string="Disetujui oleh", readonly=True)
     approved_at = fields.Datetime(readonly=True)
     summary = fields.Json(readonly=True)
     line_ids = fields.One2many("rasentra.count.line", "session_id", readonly=True)
-    adjustment_id = fields.Many2one("rasentra.stock.adjustment", readonly=True)
+    adjustment_id = fields.Many2one("rasentra.stock.adjustment", readonly=True, string="Dokumen penyesuaian")
     summary_html = fields.Html(compute="_compute_summary_html", sanitize=False)
 
     @api.depends("outlet_id", "cutoff_at")
@@ -91,9 +92,11 @@ class RasentraCountSession(models.Model):
         self.invalidate_recordset()
         if self.state not in ("counting", "recount"):
             raise RasentraError.conflict("count_closed", _("Sesi opname tidak sedang menghitung."))
+        # Lokasi milik outlet, ditambah lokasi stok gudang yang dipakai outlet (tanpa penanda outlet).
+        stock_location = self.env["rasentra.stock.ledger"].location(self.outlet_id, "stock")
         location = self.env["stock.location"].sudo().search(
-            [("rasentra_outlet_id", "=", self.outlet_id.id), "|", ("barcode", "=", location_code),
-             ("name", "=", location_code)], limit=1,
+            ["|", ("rasentra_outlet_id", "=", self.outlet_id.id), ("id", "=", stock_location.id),
+             "|", ("barcode", "=", location_code), ("name", "=", location_code)], limit=1,
         )
         if not location:
             raise RasentraError(
@@ -266,13 +269,13 @@ class RasentraCountLine(models.Model):
     _order = "id desc"
 
     session_id = fields.Many2one("rasentra.count.session", required=True, ondelete="cascade", index=True)
-    round = fields.Integer(required=True, default=1)
-    location_id = fields.Many2one("stock.location", required=True)
-    product_id = fields.Many2one("product.product", required=True)
+    round = fields.Integer(required=True, default=1, string="Ronde")
+    location_id = fields.Many2one("stock.location", required=True, string="Lokasi")
+    product_id = fields.Many2one("product.product", required=True, string="Produk")
     lot_id = fields.Many2one("stock.lot", string="Pack ID")
-    quantity = fields.Float(digits=(18, 6), required=True)
+    quantity = fields.Float(digits=(18, 6), required=True, string="Jumlah")
     counted_by_id = fields.Many2one("hr.employee", string="Petugas")
-    counted_at = fields.Datetime(default=fields.Datetime.now, readonly=True)
+    counted_at = fields.Datetime(default=fields.Datetime.now, readonly=True, string="Waktu hitung")
 
 
 class RasentraCountSessionActions(models.Model):

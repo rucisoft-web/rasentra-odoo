@@ -44,7 +44,10 @@ class RasentraKitchen(models.AbstractModel):
         Outlet = self.env["rasentra.outlet"].sudo()
         if outlet_id:
             return Outlet.browse(int(outlet_id)).exists()
-        return self.env["rasentra.profile"].current_outlet() or Outlet.search([("has_restaurant", "=", True)], limit=1)
+        # Instalasi Lokal: outlet profil. Central/demo: outlet karyawan pengguna, lalu restoran pertama.
+        return (self.env["rasentra.profile"].current_outlet()
+                or self.env.user.employee_id.rasentra_outlet_id.filtered("has_restaurant")
+                or Outlet.search([("has_restaurant", "=", True)], limit=1))
 
     @api.model
     def _kitchen_location(self, outlet):
