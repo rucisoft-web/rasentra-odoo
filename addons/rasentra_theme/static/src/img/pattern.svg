@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220" fill="none" stroke="#e6d9c7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- steak -->
+  <path d="M28 40 q10 -18 32 -12 q20 6 14 24 q-6 18 -28 14 q-24 -4 -18 -26 Z"/>
+  <path d="M40 44 q10 -6 20 2"/>
+  <!-- golok -->
+  <path d="M130 30 h40 v16 h-34 q-6 0 -6 -6 Z"/><path d="M170 36 h16"/>
+  <!-- daun -->
+  <path d="M40 150 q18 -24 46 -10 q-22 20 -46 10 Z"/><path d="M44 148 q20 -4 40 -6"/>
+  <!-- wajan -->
+  <circle cx="150" cy="150" r="22"/><path d="M172 150 h26"/>
+  <!-- garpu -->
+  <path d="M100 92 v30 M94 92 v10 q0 6 6 6 q6 0 6 -6 v-10"/>
+  <!-- cabai -->
+  <path d="M188 96 q-10 18 -30 22 q14 -10 22 -26 q4 -4 8 4 Z"/>
+</svg>

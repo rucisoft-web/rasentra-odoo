@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_lot_form_rasentra" model="ir.ui.view">
+        <field name="name">stock.lot.form.rasentra</field>
+        <field name="model">stock.lot</field>
+        <field name="inherit_id" ref="stock.view_production_lot_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Pack ID" name="rasentra_pack" invisible="not is_rasentra_pack">
+                    <group>
+                        <group>
+                            <field name="is_rasentra_pack"/>
+                            <field name="pack_status"/>
+                            <field name="net_weight"/>
+                            <field name="label_price"/>
+                            <field name="rasentra_outlet_id"/>
+                            <field name="rasentra_location_type"/>
+                        </group>
+                        <group>
+                            <field name="packed_at"/>
+                            <field name="pack_expiry_date"/>
+                            <field name="weigh_source"/>
+                            <field name="rasentra_batch_no"/>
+                            <field name="production_date"/>
+                            <field name="sold_line_uuid" readonly="1"/>
+                        </group>
+                    </group>
+                    <field name="pack_event_ids" readonly="1">
+                        <list>
+                            <field name="occurred_at"/>
+                            <field name="event"/>
+                            <field name="from_status"/>
+                            <field name="to_status"/>
+                            <field name="employee_id"/>
+                            <field name="source_ref"/>
+                            <field name="reason"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+    <record id="action_pack" model="ir.actions.act_window">
+        <field name="name">Pack ID</field>
+        <field name="res_model">stock.lot</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('is_rasentra_pack', '=', True)]</field>
+        <field name="context">{'default_is_rasentra_pack': True}</field>
+    </record>
+    <menuitem id="menu_pack" name="Pack ID" parent="rasentra_core.menu_rasentra_catalog" action="action_pack" sequence="30"/>
+</odoo>

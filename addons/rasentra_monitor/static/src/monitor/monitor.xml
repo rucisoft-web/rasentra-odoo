@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="rasentra_monitor.Status">
+        <div class="o_rasentra_page o_rasentra_monitor h-100 overflow-auto p-3">
+            <t t-set="d" t-value="state.data"/>
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                <h2 class="me-auto mb-0">Status Central</h2>
+                <span class="text-muted small">Profil <b t-esc="d.profile"/> · kursor publikasi <b t-esc="d.cursor"/></span>
+                <button class="btn btn-primary" t-att-disabled="state.busy" t-on-click="() => this.run('post_sap_now', 'Posting SAP')">
+                    <i class="fa fa-paper-plane me-1"/>Posting SAP sekarang
+                </button>
+                <button class="btn btn-secondary" t-att-disabled="state.busy" t-on-click="() => this.run('check_sap', 'Cek SAP')">
+                    <i class="fa fa-plug me-1"/>Cek koneksi SAP
+                </button>
+            </div>
+            <div class="row g-3 mb-3">
+                <div class="col-6 col-lg-3">
+                    <div class="o_rasentra_tile" t-on-click="() => this.open('inbox')">
+                        <div class="o_rasentra_tile_label">Event masuk 1 jam / 24 jam</div>
+                        <div class="o_rasentra_tile_value"><t t-esc="d.inbox.hour"/> / <t t-esc="d.inbox.day"/></div>
+                        <div class="small text-muted">menunggu induk <t t-esc="d.inbox.waiting"/> · gagal <t t-esc="d.inbox.failed"/></div>
+                    </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="o_rasentra_tile" t-att-class="{'is-warn': d.needs_review}" t-on-click="() => this.open('sap')">
+                        <div class="o_rasentra_tile_label">Dokumen SAP perlu tindakan</div>
+                        <div class="o_rasentra_tile_value" t-esc="d.needs_review"/>
+                        <div class="small text-muted">gagal, parsial, perlu dicek</div>
+                    </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="o_rasentra_tile" t-att-class="{'is-err': d.exceptions}" t-on-click="() => this.open('exceptions')">
+                        <div class="o_rasentra_tile_label">Pengecualian integrasi terbuka</div>
+                        <div class="o_rasentra_tile_value" t-esc="d.exceptions"/>
+                        <div class="small text-muted">mis. mapping SAP kosong</div>
+                    </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="o_rasentra_tile" t-on-click="() => this.open('reconciliation')">
+                        <div class="o_rasentra_tile_label">Rekonsiliasi 7 hari</div>
+                        <div class="o_rasentra_tile_value">
+                            <span class="text-success" t-esc="d.reconciliation.matched or 0"/> /
+                            <span class="text-warning" t-esc="d.reconciliation.waiting or 0"/> /
+                            <span class="text-danger" t-esc="d.reconciliation.mismatch or 0"/>
+                        </div>
+                        <div class="small text-muted">cocok / menunggu / selisih</div>
+                    </div>
+                </div>
+            </div>
+
+            <h4>Outlet (heartbeat Rasentra Lokal)</h4>
+            <div class="table-responsive mb-4">
+                <table class="table table-sm align-middle o_rasentra_table">
+                    <thead><tr>
+                        <th>Outlet</th><th>Status</th><th>Heartbeat</th><th>Tertinggal</th>
+                        <th>Outbox (antre/gagal/parkir)</th><th>Selisih jam</th><th>Hari buka</th><th>Versi</th><th>Error terakhir</th>
+                    </tr></thead>
+                    <tbody>
+                        <tr t-foreach="d.outlets" t-as="o" t-key="o.id">
+                            <td><b t-esc="o.code"/> <span class="text-muted" t-esc="o.name"/><div class="small text-muted" t-esc="o.company"/></td>
+                            <td><span t-attf-class="o_rasentra_health o_rasentra_health_{{o.health}}" t-esc="o.health_label"/></td>
+                            <td t-esc="heartbeatText(o)"/>
+                            <td t-esc="o.lag"/>
+                            <td><t t-esc="o.outbox_pending"/> / <t t-esc="o.outbox_failed"/> / <t t-esc="o.outbox_parked"/></td>
+                            <td><t t-esc="o.clock_skew"/> dtk</td>
+                            <td><t t-esc="o.open_business_date or '-'"/> <span class="small text-muted" t-if="o.open_shifts">(<t t-esc="o.open_shifts"/> shift)</span></td>
+                            <td t-esc="o.app_version or '-'"/>
+                            <td class="small text-danger" t-esc="o.last_error or ''"/>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h4>SAP Business One per perusahaan</h4>
+            <div class="row g-3">
+                <div class="col-md-6" t-foreach="d.companies" t-as="c" t-key="c.company_db">
+                    <div class="o_rasentra_card p-3">
+                        <div class="d-flex justify-content-between">
+                            <b t-esc="c.name"/>
+                            <code t-esc="c.company_db"/>
+                        </div>
+                        <div class="my-2">
+                            <t t-if="c.health">
+                                <span t-attf-class="o_rasentra_health o_rasentra_health_{{c.health.ok ? 'ok' : 'err'}}" t-esc="c.health.ok ? 'Terhubung' : 'Tidak terhubung'"/>
+                                <span class="small text-muted ms-2">dicek <t t-esc="c.health.at"/> (<t t-esc="c.health.ms"/> ms)</span>
+                            </t>
+                            <span t-else="" class="o_rasentra_health o_rasentra_health_none">Belum dicek</span>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2">
+                            <span t-foreach="sapEntries(c.sap)" t-as="s" t-key="s.status" class="badge text-bg-light border">
+                                <t t-esc="s.label"/>: <t t-esc="s.n"/>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4 d-flex gap-2">
+                <button class="btn btn-link" t-on-click="() => this.open('sync_state')">Detail status sinkron</button>
+                <button class="btn btn-link" t-on-click="() => this.open('audit')">Log audit</button>
+            </div>
+        </div>
+    </t>
+</templates>

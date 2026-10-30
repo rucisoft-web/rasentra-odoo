@@ -1,0 +1,11 @@
+# Dependensi Python di atas image odoo:18.0 (lihat external_dependencies tiap modul).
+# OCA fastapi
+fastapi
+python-multipart
+ujson
+a2wsgi>=1.10.6
+parse-accept-language
+fastapi-openapi-overrides
+packaging
+# Uji API (fastapi.testclient)
+httpx

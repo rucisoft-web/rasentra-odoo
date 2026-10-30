@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_pos_config_form_rasentra" model="ir.ui.view">
+        <field name="model">pos.config</field>
+        <field name="inherit_id" ref="point_of_sale.pos_config_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <group string="Rasentra">
+                    <field name="rasentra_outlet_id"/>
+                    <field name="rasentra_channel"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_pos_payment_method_form_rasentra" model="ir.ui.view">
+        <field name="model">pos.payment.method</field>
+        <field name="inherit_id" ref="point_of_sale.pos_payment_method_view_form"/>
+        <field name="arch" type="xml">
+            <field name="journal_id" position="after">
+                <field name="rasentra_method"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_pos_order_form_rasentra" model="ir.ui.view">
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Rasentra" invisible="not rasentra_outlet_id">
+                    <group>
+                        <group>
+                            <field name="rasentra_outlet_id"/>
+                            <field name="rasentra_channel"/>
+                            <field name="rasentra_doc_no"/>
+                            <field name="rasentra_business_date"/>
+                            <field name="rasentra_review"/>
+                            <field name="rasentra_print_count"/>
+                        </group>
+                        <group>
+                            <field name="rasentra_gross_amount"/>
+                            <field name="rasentra_discount_amount"/>
+                            <field name="rasentra_net_amount"/>
+                            <field name="customer_name"/>
+                            <field name="customer_phone"/>
+                            <field name="delivery_address"/>
+                        </group>
+                    </group>
+                    <button name="action_rasentra_reprint" type="object" string="Catat cetak ulang struk"/>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

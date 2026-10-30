@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_inbox_admin,inbox admin,model_rasentra_sync_inbox,rasentra_core.group_rasentra_admin,1,0,0,0
+access_publication_admin,publication admin,model_rasentra_sync_publication,rasentra_core.group_rasentra_admin,1,0,0,0
+access_state_admin,sync state admin,model_rasentra_outlet_sync_state,rasentra_core.group_rasentra_admin,1,0,0,0

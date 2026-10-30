@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_promotion_simulate_form" model="ir.ui.view">
+        <field name="model">rasentra.promotion.simulate</field>
+        <field name="arch" type="xml">
+            <form string="Simulasi promo">
+                <group>
+                    <field name="version_id" readonly="1"/>
+                    <field name="outlet_id"/>
+                    <field name="channel"/>
+                </group>
+                <field name="line_ids">
+                    <list editable="bottom">
+                        <field name="product_id"/>
+                        <field name="quantity"/>
+                    </list>
+                </field>
+                <group invisible="not result">
+                    <field name="this_discount" string="Diskon dari versi ini"/>
+                    <field name="result" string="Hasil engine"/>
+                </group>
+                <footer>
+                    <button name="action_simulate" type="object" string="Hitung" class="btn-primary"/>
+                    <button special="cancel" string="Tutup"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_promotion_publish_form" model="ir.ui.view">
+        <field name="model">rasentra.promotion.publish</field>
+        <field name="arch" type="xml">
+            <form string="Terbitkan promo">
+                <group>
+                    <field name="version_id" readonly="1"/>
+                    <field name="target_all"/>
+                    <field name="region_ids" widget="many2many_tags" invisible="target_all"/>
+                    <field name="outlet_ids" widget="many2many_tags" invisible="target_all"/>
+                </group>
+                <footer>
+                    <button name="action_publish" type="object" string="Terbitkan" class="btn-primary"/>
+                    <button special="cancel" string="Batal"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_promotion_stop_form" model="ir.ui.view">
+        <field name="model">rasentra.promotion.stop</field>
+        <field name="arch" type="xml">
+            <form string="Hentikan promo">
+                <group>
+                    <field name="version_id" readonly="1"/>
+                    <field name="reason"/>
+                </group>
+                <footer>
+                    <button name="action_stop" type="object" string="Hentikan" class="btn-danger"/>
+                    <button special="cancel" string="Batal"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_promotion_simulate" model="ir.actions.act_window">
+        <field name="name">Simulasi promo</field>
+        <field name="res_model">rasentra.promotion.simulate</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+    <record id="action_promotion_publish" model="ir.actions.act_window">
+        <field name="name">Terbitkan promo</field>
+        <field name="res_model">rasentra.promotion.publish</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+    <record id="action_promotion_stop" model="ir.actions.act_window">
+        <field name="name">Hentikan promo</field>
+        <field name="res_model">rasentra.promotion.stop</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

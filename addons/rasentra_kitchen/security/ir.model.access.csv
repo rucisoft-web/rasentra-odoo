@@ -1,0 +1,13 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_ticket_kitchen,ticket kitchen,model_rasentra_kitchen_ticket,rasentra_core.group_rasentra_kitchen,1,0,0,0
+access_ticket_head,ticket head,model_rasentra_kitchen_ticket,rasentra_core.group_rasentra_outlet_head,1,0,0,0
+access_ticket_pos,ticket pos,model_rasentra_kitchen_ticket,point_of_sale.group_pos_user,1,0,0,0
+access_item_kitchen,item kitchen,model_rasentra_kitchen_item,rasentra_core.group_rasentra_kitchen,1,0,0,0
+access_item_head,item head,model_rasentra_kitchen_item,rasentra_core.group_rasentra_outlet_head,1,0,0,0
+access_item_pos,item pos,model_rasentra_kitchen_item,point_of_sale.group_pos_user,1,0,0,0
+access_consumption_kitchen,consumption kitchen,model_rasentra_consumption_event,rasentra_core.group_rasentra_kitchen,1,0,0,0
+access_consumption_head,consumption head,model_rasentra_consumption_event,rasentra_core.group_rasentra_outlet_head,1,0,0,0
+access_batch_kitchen,batch kitchen,model_rasentra_production_batch,rasentra_core.group_rasentra_kitchen,1,0,0,0
+access_batch_head,batch head,model_rasentra_production_batch,rasentra_core.group_rasentra_outlet_head,1,0,0,0
+access_production_wizard,production wizard,model_rasentra_production_wizard,rasentra_core.group_rasentra_kitchen,1,1,1,1
+access_production_wizard_line,production wizard line,model_rasentra_production_wizard_line,rasentra_core.group_rasentra_kitchen,1,1,1,1

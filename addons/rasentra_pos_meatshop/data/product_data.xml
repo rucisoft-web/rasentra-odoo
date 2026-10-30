@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!-- Baris diskon promo di struk POS: satu baris negatif per versi promo, nilainya dari engine server. -->
+    <record id="product_promo_discount" model="product.product">
+        <field name="name">Diskon promo</field>
+        <field name="default_code">RASENTRA-PROMO</field>
+        <field name="type">service</field>
+        <field name="list_price">0</field>
+        <field name="available_in_pos">True</field>
+        <field name="taxes_id" eval="[(5, 0, 0)]"/>
+        <field name="sale_ok">True</field>
+        <field name="purchase_ok">False</field>
+    </record>
+</odoo>

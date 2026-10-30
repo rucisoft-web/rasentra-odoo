@@ -1,0 +1,18 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_hq_order_admin,hq order admin,model_rasentra_hq_order,rasentra_core.group_rasentra_admin,1,0,0,0
+access_hq_order_merch,hq order merch,model_rasentra_hq_order,rasentra_core.group_rasentra_merch,1,0,0,0
+access_hq_order_finance,hq order finance,model_rasentra_hq_order,rasentra_core.group_rasentra_finance,1,0,0,0
+access_hq_line_admin,hq line admin,model_rasentra_hq_order_line,rasentra_core.group_rasentra_admin,1,0,0,0
+access_hq_line_merch,hq line merch,model_rasentra_hq_order_line,rasentra_core.group_rasentra_merch,1,0,0,0
+access_hq_line_finance,hq line finance,model_rasentra_hq_order_line,rasentra_core.group_rasentra_finance,1,0,0,0
+access_hq_discount_admin,hq discount admin,model_rasentra_hq_order_discount,rasentra_core.group_rasentra_admin,1,0,0,0
+access_hq_discount_merch,hq discount merch,model_rasentra_hq_order_discount,rasentra_core.group_rasentra_merch,1,0,0,0
+access_hq_discount_finance,hq discount finance,model_rasentra_hq_order_discount,rasentra_core.group_rasentra_finance,1,0,0,0
+access_hq_payment_admin,hq payment admin,model_rasentra_hq_order_payment,rasentra_core.group_rasentra_admin,1,0,0,0
+access_hq_payment_finance,hq payment finance,model_rasentra_hq_order_payment,rasentra_core.group_rasentra_finance,1,0,0,0
+access_reconciliation_admin,reconciliation admin,model_rasentra_day_reconciliation,rasentra_core.group_rasentra_admin,1,1,0,0
+access_reconciliation_finance,reconciliation finance,model_rasentra_day_reconciliation,rasentra_core.group_rasentra_finance,1,1,0,0
+access_hq_stock_adj_admin,hq stock adj admin,model_rasentra_hq_stock_adjustment,rasentra_core.group_rasentra_admin,1,0,0,0
+access_hq_stock_adj_finance,hq stock adj finance,model_rasentra_hq_stock_adjustment,rasentra_core.group_rasentra_finance,1,0,0,0
+access_hq_stock_adj_line_admin,hq stock adj line admin,model_rasentra_hq_stock_adjustment_line,rasentra_core.group_rasentra_admin,1,0,0,0
+access_hq_stock_adj_line_finance,hq stock adj line finance,model_rasentra_hq_stock_adjustment_line,rasentra_core.group_rasentra_finance,1,0,0,0

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_pos_session_form_rasentra_cash" model="ir.ui.view">
+        <field name="name">pos.session.form.rasentra.cash</field>
+        <field name="model">pos.session</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_session_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <group string="Tutup shift Rasentra" invisible="not rasentra_closing_expected">
+                    <field name="rasentra_cash_difference"/>
+                    <field name="rasentra_closed_by_id"/>
+                    <field name="rasentra_closing_approver_id"/>
+                    <field name="rasentra_closing_expected" widget="text" readonly="1"/>
+                    <field name="rasentra_closing_counts" widget="text" readonly="1"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

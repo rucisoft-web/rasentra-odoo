@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Daging dijual per gram: berat Pack ID dan baris POS wajib 3 desimal (1,405 kg, bukan 1,41 kg). -->
+    <record id="product.decimal_product_uom" model="decimal.precision">
+        <field name="digits">3</field>
+    </record>
+    <record id="product.decimal_stock_weight" model="decimal.precision">
+        <field name="digits">3</field>
+    </record>
+    <record id="uom.product_uom_kgm" model="uom.uom">
+        <field name="rounding">0.001</field>
+    </record>
+    <record id="uom.product_uom_gram" model="uom.uom">
+        <field name="rounding">0.01</field>
+    </record>
+    <record id="uom.product_uom_litre" model="uom.uom">
+        <field name="rounding">0.001</field>
+    </record>
+</odoo>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="cron_close_business_day" model="ir.cron">
+        <field name="name">Rasentra: tutup hari bisnis (04.00)</field>
+        <field name="model_id" ref="rasentra_core.model_rasentra_outlet"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_close_previous_day()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="nextcall" eval="(DateTime.now() + timedelta(days=1)).strftime('%Y-%m-%d 21:00:00')"/>
+    </record>
+</odoo>

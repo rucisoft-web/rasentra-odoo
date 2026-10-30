@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_dashboard" model="ir.actions.client">
+        <field name="name">Dashboard</field>
+        <field name="tag">rasentra_dashboard.main</field>
+    </record>
+    <menuitem id="menu_dashboard" name="Dashboard" action="action_dashboard" parent="rasentra_core.menu_rasentra_root"
+              sequence="1" groups="rasentra_core.group_rasentra_merch,rasentra_core.group_rasentra_finance"/>
+</odoo>

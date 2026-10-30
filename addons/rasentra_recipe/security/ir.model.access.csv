@@ -1,0 +1,10 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_recipe_user,recipe user,model_rasentra_recipe,rasentra_core.group_rasentra_user,1,0,0,0
+access_recipe_kitchen,recipe kitchen,model_rasentra_recipe,rasentra_core.group_rasentra_kitchen,1,1,1,0
+access_recipe_merch,recipe merch,model_rasentra_recipe,rasentra_core.group_rasentra_merch,1,1,1,0
+access_recipe_version_user,recipe version user,model_rasentra_recipe_version,rasentra_core.group_rasentra_user,1,0,0,0
+access_recipe_version_kitchen,recipe version kitchen,model_rasentra_recipe_version,rasentra_core.group_rasentra_kitchen,1,1,1,1
+access_recipe_version_merch,recipe version merch,model_rasentra_recipe_version,rasentra_core.group_rasentra_merch,1,1,1,1
+access_recipe_line_user,recipe line user,model_rasentra_recipe_line,rasentra_core.group_rasentra_user,1,0,0,0
+access_recipe_line_kitchen,recipe line kitchen,model_rasentra_recipe_line,rasentra_core.group_rasentra_kitchen,1,1,1,1
+access_recipe_line_merch,recipe line merch,model_rasentra_recipe_line,rasentra_core.group_rasentra_merch,1,1,1,1

@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_sync_state_list" model="ir.ui.view">
+        <field name="model">rasentra.outlet.sync.state</field>
+        <field name="arch" type="xml">
+            <list create="0" delete="0" decoration-danger="last_error" decoration-warning="outbox_parked &gt; 0">
+                <field name="outlet_id"/>
+                <field name="device_id"/>
+                <field name="app_version"/>
+                <field name="last_heartbeat_at"/>
+                <field name="clock_skew_seconds"/>
+                <field name="applied_cursor"/>
+                <field name="lag"/>
+                <field name="outbox_pending"/>
+                <field name="outbox_failed"/>
+                <field name="outbox_parked"/>
+                <field name="outbox_oldest_at"/>
+                <field name="open_business_date"/>
+                <field name="open_shifts"/>
+                <field name="last_error"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_sync_state" model="ir.actions.act_window">
+        <field name="name">Status sinkron outlet</field>
+        <field name="res_model">rasentra.outlet.sync.state</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <record id="view_sync_inbox_list" model="ir.ui.view">
+        <field name="model">rasentra.sync.inbox</field>
+        <field name="arch" type="xml">
+            <list create="0" delete="0" decoration-danger="state == 'failed'" decoration-warning="state == 'deferred_dependency'">
+                <field name="create_date" string="Diterima"/>
+                <field name="outlet_id"/>
+                <field name="source_id"/>
+                <field name="event_type"/>
+                <field name="entity_type"/>
+                <field name="entity_uuid"/>
+                <field name="business_date"/>
+                <field name="ack_ref"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_sync_inbox_form" model="ir.ui.view">
+        <field name="model">rasentra.sync.inbox</field>
+        <field name="arch" type="xml">
+            <form create="0" edit="0" delete="0">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="event_uuid"/>
+                            <field name="source_id"/>
+                            <field name="device_id"/>
+                            <field name="outlet_id"/>
+                            <field name="state"/>
+                            <field name="ack_ref"/>
+                        </group>
+                        <group>
+                            <field name="event_type"/>
+                            <field name="entity_type"/>
+                            <field name="entity_uuid"/>
+                            <field name="entity_version"/>
+                            <field name="occurred_at"/>
+                            <field name="business_date"/>
+                            <field name="correlation_id"/>
+                        </group>
+                    </group>
+                    <field name="error" invisible="not error"/>
+                    <field name="payload" widget="ace" options="{'mode': 'json'}"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_sync_inbox_search" model="ir.ui.view">
+        <field name="model">rasentra.sync.inbox</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="event_uuid"/>
+                <field name="entity_uuid"/>
+                <field name="event_type"/>
+                <field name="outlet_id"/>
+                <filter name="failed" string="Gagal / menunggu" domain="[('state', 'in', ('failed', 'deferred_dependency'))]"/>
+                <group>
+                    <filter name="by_outlet" string="Outlet" context="{'group_by': 'outlet_id'}"/>
+                    <filter name="by_type" string="Jenis event" context="{'group_by': 'event_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_sync_inbox" model="ir.actions.act_window">
+        <field name="name">Event masuk</field>
+        <field name="res_model">rasentra.sync.inbox</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_sync_publication_list" model="ir.ui.view">
+        <field name="model">rasentra.sync.publication</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0" delete="0">
+                <field name="id" string="Cursor"/>
+                <field name="create_date"/>
+                <field name="entity_type"/>
+                <field name="entity_key"/>
+                <field name="outlet_ids" widget="many2many_tags"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_sync_publication" model="ir.actions.act_window">
+        <field name="name">Publikasi master</field>
+        <field name="res_model">rasentra.sync.publication</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_sync" name="Sinkron Central" parent="rasentra_core.menu_rasentra_root" sequence="70"
+              groups="rasentra_core.group_rasentra_admin"/>
+    <menuitem id="menu_sync_state" action="action_sync_state" parent="menu_sync" sequence="10"/>
+    <menuitem id="menu_sync_inbox" action="action_sync_inbox" parent="menu_sync" sequence="20"/>
+    <menuitem id="menu_sync_publication" action="action_sync_publication" parent="menu_sync" sequence="30"/>
+</odoo>

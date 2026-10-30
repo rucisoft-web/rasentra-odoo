@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!-- Laravel menjalankan rasentra:sync tiap 10 detik; cron Odoo minimal 1 menit, sehingga
+         pengiriman instan dipicu juga dari transaksi (tahap POS) lewat with_delay(). -->
+    <record id="cron_sync" model="ir.cron">
+        <field name="name">Rasentra Lokal: sinkron dengan Central</field>
+        <field name="model_id" ref="model_rasentra_sync_agent"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_sync()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">minutes</field>
+        <field name="active">True</field>
+    </record>
+</odoo>

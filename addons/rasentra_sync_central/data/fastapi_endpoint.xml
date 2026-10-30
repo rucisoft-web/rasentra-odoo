@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Pengguna teknis yang menjalankan API sinkron. Autentikasi sebenarnya adalah token perangkat;
+         model sinkron memakai sudo() setelah perangkat terverifikasi. -->
+    <record id="user_sync_api" model="res.users" context="{'no_reset_password': True}">
+        <field name="name">Rasentra Sync API</field>
+        <field name="login">rasentra_sync_api</field>
+        <field name="groups_id" eval="[(6, 0, [ref('fastapi.group_fastapi_endpoint_runner')])]"/>
+    </record>
+
+    <record id="endpoint_sync" model="fastapi.endpoint">
+        <field name="name">Rasentra Sync API v1</field>
+        <field name="description">Kontrak sinkron Rasentra Central: events, changes, snapshot, ack, heartbeat.</field>
+        <field name="app">rasentra_sync</field>
+        <field name="root_path">/api/v1/sync</field>
+        <field name="user_id" ref="user_sync_api"/>
+    </record>
+</odoo>

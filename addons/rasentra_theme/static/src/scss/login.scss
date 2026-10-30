@@ -1,0 +1,25 @@
+// Halaman login: pola garis halus bertema dapur & meatshop (SVG 2 KB), kartu putih di tengah.
+body.o_rasentra_login {
+    background-color: #faf6ef;
+    background-image: url("/rasentra_theme/static/src/img/pattern.svg");
+    background-size: 220px 220px;
+    min-height: 100%;
+
+    .o_rasentra_login_card {
+        background: #fff !important;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(46, 36, 32, 0.12);
+        border-top: 6px solid #8b2e1f !important;
+    }
+    .o_rasentra_tagline {
+        color: #6b5b53;
+        font-size: 0.85rem;
+        letter-spacing: 0.02em;
+    }
+    .btn-primary {
+        background-color: #8b2e1f;
+        border-color: #8b2e1f;
+        &:hover, &:focus { background-color: #6f2418; border-color: #6f2418; }
+    }
+    a { color: #8b2e1f; }
+}

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="cron_sap_post_pending" model="ir.cron">
+        <field name="name">Rasentra: posting SAP</field>
+        <field name="model_id" ref="model_rasentra_sap_document"/>
+        <field name="state">code</field>
+        <field name="code">model.post_pending()</field>
+        <field name="interval_number">5</field>
+        <field name="interval_type">minutes</field>
+    </record>
+    <record id="cron_sap_recover" model="ir.cron">
+        <field name="name">Rasentra: pemulihan posting SAP (needs_review)</field>
+        <field name="model_id" ref="model_rasentra_sap_document"/>
+        <field name="state">code</field>
+        <field name="code">model.recover()</field>
+        <field name="interval_number">15</field>
+        <field name="interval_type">minutes</field>
+    </record>
+    <record id="cron_sap_health" model="ir.cron">
+        <field name="name">Rasentra: cek kesehatan SAP</field>
+        <field name="model_id" ref="model_rasentra_sap_document"/>
+        <field name="state">code</field>
+        <field name="code">model.check_health()</field>
+        <field name="interval_number">15</field>
+        <field name="interval_type">minutes</field>
+    </record>
+</odoo>

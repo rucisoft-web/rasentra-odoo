@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="param_loss_tolerance" model="ir.config_parameter">
+        <field name="key">rasentra.production_loss_tolerance_percent</field>
+        <field name="value">2</field>
+    </record>
+    <record id="param_loss_reasons" model="ir.config_parameter">
+        <field name="key">rasentra.production_loss_reasons</field>
+        <field name="value">Susut masak|Susut potong|Tumpah|Gosong / gagal|Bahan tidak layak</field>
+    </record>
+</odoo>

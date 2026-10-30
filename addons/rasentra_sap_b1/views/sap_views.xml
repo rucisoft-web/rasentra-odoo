@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_sap_document_list" model="ir.ui.view">
+        <field name="name">rasentra.sap.document.list</field>
+        <field name="model">rasentra.sap.document</field>
+        <field name="arch" type="xml">
+            <list create="false" decoration-success="status == 'posted'" decoration-danger="status in ('failed', 'needs_review')"
+                  decoration-warning="status in ('waiting_dependency', 'partially_posted')">
+                <field name="create_date"/>
+                <field name="company_db"/>
+                <field name="hq_order_id"/>
+                <field name="sap_object"/>
+                <field name="status" widget="badge"/>
+                <field name="doc_num"/>
+                <field name="posted_amount"/>
+                <field name="attempts"/>
+                <field name="last_error" optional="show"/>
+                <button name="action_post_now" type="object" string="Posting sekarang" icon="fa-upload"
+                        invisible="status == 'posted'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_sap_document_form" model="ir.ui.view">
+        <field name="name">rasentra.sap.document.form</field>
+        <field name="model">rasentra.sap.document</field>
+        <field name="arch" type="xml">
+            <form create="false" edit="false">
+                <header>
+                    <button name="action_post_now" type="object" string="Posting sekarang" class="btn-primary"
+                            invisible="status == 'posted'"/>
+                    <field name="status" widget="statusbar" statusbar_visible="pending,posted"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="company_db"/>
+                            <field name="source_ref"/>
+                            <field name="hq_order_id"/>
+                            <field name="sap_object"/>
+                        </group>
+                        <group>
+                            <field name="doc_entry"/>
+                            <field name="doc_num"/>
+                            <field name="posted_amount"/>
+                            <field name="posting_date"/>
+                            <field name="attempts"/>
+                        </group>
+                    </group>
+                    <field name="last_error" invisible="not last_error"/>
+                    <notebook>
+                        <page string="Request"><field name="request_text"/></page>
+                        <page string="Response"><field name="response_text"/></page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_sap_document_search" model="ir.ui.view">
+        <field name="name">rasentra.sap.document.search</field>
+        <field name="model">rasentra.sap.document</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="source_ref"/>
+                <field name="hq_order_id"/>
+                <filter name="problem" string="Perlu tindakan"
+                        domain="[('status', 'in', ('failed', 'needs_review', 'waiting_dependency', 'partially_posted'))]"/>
+                <group expand="0" string="Kelompok">
+                    <filter name="by_status" string="Status" context="{'group_by': 'status'}"/>
+                    <filter name="by_db" string="Instance SAP" context="{'group_by': 'company_db'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_sap_document" model="ir.actions.act_window">
+        <field name="name">Antrean SAP</field>
+        <field name="res_model">rasentra.sap.document</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_problem': 1}</field>
+    </record>
+
+    <record id="view_sap_mapping_list" model="ir.ui.view">
+        <field name="name">rasentra.sap.mapping.list</field>
+        <field name="model">rasentra.sap.mapping</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="company_db"/>
+                <field name="entity_type"/>
+                <field name="entity_key"/>
+                <field name="sap_code"/>
+                <field name="tax_code"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_sap_mapping" model="ir.actions.act_window">
+        <field name="name">Mapping SAP</field>
+        <field name="res_model">rasentra.sap.mapping</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <record id="view_integration_exception_list" model="ir.ui.view">
+        <field name="name">rasentra.integration.exception.list</field>
+        <field name="model">rasentra.integration.exception</field>
+        <field name="arch" type="xml">
+            <list create="false" decoration-muted="status == 'resolved'">
+                <field name="create_date"/>
+                <field name="kind"/>
+                <field name="company_db"/>
+                <field name="source_type"/>
+                <field name="source_uuid"/>
+                <field name="message"/>
+                <field name="status" widget="badge"/>
+                <button name="action_resolve" type="object" string="Selesai" icon="fa-check" invisible="status == 'resolved'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_integration_exception" model="ir.actions.act_window">
+        <field name="name">Pengecualian integrasi</field>
+        <field name="res_model">rasentra.integration.exception</field>
+        <field name="view_mode">list</field>
+        <field name="domain">[('status', '=', 'open')]</field>
+    </record>
+
+    <record id="view_hq_order_form_sap" model="ir.ui.view">
+        <field name="name">rasentra.hq.order.form.sap</field>
+        <field name="model">rasentra.hq.order</field>
+        <field name="inherit_id" ref="rasentra_reconcile.view_hq_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="before">
+                <header>
+                    <button name="action_sap_post_now" type="object" string="Posting SAP sekarang"
+                            invisible="sap_state == 'posted'"/>
+                    <field name="sap_state" widget="statusbar" statusbar_visible="pending,posted"/>
+                </header>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="SAP">
+                    <field name="sap_document_ids">
+                        <list>
+                            <field name="sap_object"/>
+                            <field name="status"/>
+                            <field name="doc_num"/>
+                            <field name="posted_amount"/>
+                            <field name="last_error"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_hq_order_list_sap" model="ir.ui.view">
+        <field name="name">rasentra.hq.order.list.sap</field>
+        <field name="model">rasentra.hq.order</field>
+        <field name="inherit_id" ref="rasentra_reconcile.view_hq_order_list"/>
+        <field name="arch" type="xml">
+            <field name="finalized_at" position="after">
+                <field name="sap_state" widget="badge"/>
+            </field>
+        </field>
+    </record>
+
+    <menuitem id="menu_sap" name="SAP" parent="rasentra_core.menu_rasentra_root" sequence="65"/>
+    <menuitem id="menu_sap_document" action="action_sap_document" parent="menu_sap" sequence="10"/>
+    <menuitem id="menu_integration_exception" action="action_integration_exception" parent="menu_sap" sequence="20"/>
+    <menuitem id="menu_sap_mapping" action="action_sap_mapping" parent="menu_sap" sequence="30"/>
+    <record id="view_hq_stock_adjustment_form_sap" model="ir.ui.view">
+        <field name="name">rasentra.hq.stock.adjustment.form.sap</field>
+        <field name="model">rasentra.hq.stock.adjustment</field>
+        <field name="inherit_id" ref="rasentra_reconcile.view_hq_stock_adjustment_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="before">
+                <header>
+                    <button name="action_sap_post_now" type="object" string="Posting SAP sekarang" class="btn-primary"
+                            invisible="sap_state in ('posted', 'not_required')"/>
+                    <field name="sap_state" widget="statusbar" statusbar_visible="pending,posted"/>
+                </header>
+            </xpath>
+            <xpath expr="//field[@name='line_ids']" position="after">
+                <separator string="Dokumen SAP"/>
+                <field name="sap_document_ids">
+                    <list>
+                        <field name="sap_object"/><field name="status"/><field name="doc_num"/><field name="last_error"/>
+                    </list>
+                </field>
+            </xpath>
+        </field>
+    </record>
+    <record id="view_hq_stock_adjustment_list_sap" model="ir.ui.view">
+        <field name="name">rasentra.hq.stock.adjustment.list.sap</field>
+        <field name="model">rasentra.hq.stock.adjustment</field>
+        <field name="inherit_id" ref="rasentra_reconcile.view_hq_stock_adjustment_list"/>
+        <field name="arch" type="xml">
+            <field name="reason" position="after">
+                <field name="sap_state" widget="badge"/>
+            </field>
+        </field>
+    </record>
+</odoo>
