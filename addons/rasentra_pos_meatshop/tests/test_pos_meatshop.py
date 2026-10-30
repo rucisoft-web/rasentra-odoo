@@ -99,6 +99,13 @@ class TestPosMeatshop(PosMeatshopCase):
         self.assertEqual([line["pack_code"] for line in payload["lines"]], ["PK-000184", "PK-000191"])
         self.assertEqual(payload["payments"][0]["amount"], "650000.00")
 
+    def test_gram_weight_is_kept(self):
+        """Berat per gram (1,405 kg) tidak dibulatkan presisi satuan Odoo menjadi 1,41 kg."""
+        self._pack("PK-000185", 1.405)
+        order = self.sync(self._order_data("ORDER-G1", [self.scan("PK-000185", "ORDER-G1")]))
+        self.assertEqual(order.lines.qty, 1.405)
+        self.assertEqual(order.amount_total, 281000)
+
     def test_u02_pack_cannot_be_in_two_carts(self):
         """U02: Pack ID yang sudah di keranjang kasir lain ditolak; setelah terjual pun ditolak."""
         self._pack("PK-000200", 1.2)

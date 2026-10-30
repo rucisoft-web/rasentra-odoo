@@ -64,7 +64,7 @@ class RasentraMigrationWave(models.Model):
     cutover_date = fields.Date(string="Hari H (go-live)", required=True, tracking=True)
     step_ids = fields.One2many("rasentra.migration.step", "wave_id", string="Langkah")
     batch_ids = fields.One2many("rasentra.migration.batch", "wave_id", string="Impor data")
-    progress = fields.Float(string="Progres (%)", compute="_compute_progress")
+    progress = fields.Float(string="Progres (%)", compute="_compute_progress", store=True)
     state = fields.Selection(
         [("plan", "Persiapan"), ("cutover", "Cut-over"), ("live", "Berjalan"), ("closed", "Selesai")],
         string="Status", compute="_compute_progress", store=True,
@@ -113,7 +113,7 @@ class RasentraMigrationStep(models.Model):
     code = fields.Char(required=True, readonly=True)
     name = fields.Char(string="Langkah", required=True)
     offset_days = fields.Integer(string="Hari relatif H", readonly=True)
-    when = fields.Char(string="Kapan", compute="_compute_due")
+    when = fields.Char(string="Kapan", compute="_compute_due", store=True)
     due_date = fields.Date(string="Tenggat", compute="_compute_due", store=True)
     instructions = fields.Text(string="Petunjuk")
     done = fields.Boolean(string="Selesai", readonly=True)

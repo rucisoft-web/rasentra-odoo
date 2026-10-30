@@ -9,6 +9,7 @@ LOMBOK = {
     "tz": "Asia/Makassar",
     "price_markup": 0.05,
     "unmapped": ("SHORTRIB-US",),
+    "cutover_in_days": 50,
     "outlets": [
         {"key": "lop_ms", "code": "LOP-MS", "name": "Meatshop Lombok", "retail": True, "cooking": True,
          "restaurant": True, "users": True, "retail_name": "Meatshop Lombok", "restaurant_name": "Grill Lombok",

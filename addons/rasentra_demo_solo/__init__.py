@@ -8,6 +8,8 @@ SOLO = {
     "region": ("SLO", "Solo"),
     "tz": "Asia/Jakarta",
     "xml_sample": True,
+    "unmapped": ("MINCE-BEEF",),
+    "cutover_in_days": 21,
     "outlets": [
         {"key": "slo_ms", "code": "SLO-MS", "name": "Meatshop & Grill Solo", "retail": True, "restaurant": True,
          "cooking": True, "users": True, "retail_name": "Meatshop Solo", "restaurant_name": "Grill Corner Solo",

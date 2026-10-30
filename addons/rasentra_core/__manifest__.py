@@ -10,6 +10,7 @@
         "security/rasentra_security.xml",
         "security/ir.model.access.csv",
         "data/ir_config_parameter.xml",
+        "data/uom_precision.xml",
         "views/rasentra_menus.xml",
         "views/res_company_views.xml",
         "views/rasentra_outlet_views.xml",

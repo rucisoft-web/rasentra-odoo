@@ -7,11 +7,14 @@ Kata sandi semua pengguna demo: DEMO_PASSWORD. Jangan dipakai di produksi.
 
 import logging
 import random
+import zlib
 from datetime import datetime, timedelta
 
 from odoo import fields
 
 from odoo.addons.rasentra_core.tools import checksum, uuid7
+
+from . import scenarios
 
 _logger = logging.getLogger(__name__)
 
@@ -27,11 +30,16 @@ MEAT = [
     ("SHORTRIB-US", "Short rib US", 310000),
     ("CHICKEN-FILLET", "Dada ayam fillet", 68000),
     ("SALMON-NOR", "Salmon Norwegia fillet", 420000),
+    ("STRIPLOIN-AUS", "Striploin Australia", 235000),
+    ("MINCE-BEEF", "Daging giling premium", 145000),
 ]
 RETAIL = [
     ("RT-SALT", "Garam laut 250 g", 28000),
     ("RT-PEPPER", "Lada hitam 100 g", 35000),
     ("RT-BBQ", "Saus BBQ botol 300 ml", 45000),
+    ("RT-SAUSAGE", "Sosis bratwurst 500 g", 85000),
+    ("RT-RUB", "Steak rub 80 g", 39000),
+    ("RT-CHARCOAL", "Arang briket 2 kg", 55000),
 ]
 INGREDIENTS = [
     # kode, nama, satuan
@@ -50,6 +58,8 @@ INGREDIENTS = [
     ("BH-TEA", "Teh hitam", "kg"),
     ("BH-COFFEE", "Kopi bubuk", "kg"),
     ("BH-LETTUCE", "Selada", "kg"),
+    ("BH-STRIPLOIN-PRIMAL", "Striploin utuh (primal)", "kg"),
+    ("BH-TRIMMING", "Trimming daging", "kg"),
 ]
 SAUCES = [
     ("SR-BBQ", "Saus BBQ rumahan", [("BH-TOMATO", 0.8), ("BH-GARLIC", 0.05), ("BH-SUGAR", 0.1), ("BH-BUTTER", 0.05)]),
@@ -169,7 +179,7 @@ def build_base(env):
                 pos_categ_ids=[(6, 0, [ref(env, module, "pos_categ_meat").id])])
     for code, name, price in RETAIL:
         product(code, name, is_storable=True, list_price=price, rasentra_type="retail", available_in_pos=True,
-                barcode=f"899{abs(hash(code)) % 10**10:010d}",
+                barcode=f"899{zlib.crc32(code.encode()) % 10**10:010d}",
                 pos_categ_ids=[(6, 0, [ref(env, module, "pos_categ_retail").id])])
     for code, name, uom in INGREDIENTS:
         product(code, name, is_storable=True, uom_id=_uom(env, uom).id, uom_po_id=_uom(env, uom).id,
@@ -205,6 +215,19 @@ def build_base(env):
         "promotion_id": promotion.id, "type": "percent",
         "rules": {"percent": 15, "product_ids": ["RIBEYE-WAGYU"]}, "starts_at": "2026-11-01 00:00:00"})
     xmlid(env, module, "promo_wagyu_draft", draft)
+
+    # Cabang Accurate + Rene POS: gelombang migrasi berikutnya (langkah awal sudah berjalan).
+    today = fields.Date.context_today(env["res.users"])
+    admin = ref(env, module, "user_hq_admin")
+    for key, name, days in (("jog", "Gelombang Jogja", 75), ("sby", "Gelombang Surabaya", 105),
+                            ("bdg", "Gelombang Bandung", 135)):
+        wave = env["rasentra.migration.wave"].create({
+            "name": name, "legacy": "rene_accurate", "company_id": holding.id,
+            "cutover_date": today + timedelta(days=days),
+            "note": "Cabang Accurate + Rene POS. CV dan outlet dibuat lewat menu Impor data awal (wilayah, outlet).",
+        })
+        xmlid(env, module, f"migration_wave_{key}", wave)
+        wave.step_ids.filtered(lambda s: s.due_date and s.due_date < today).with_user(admin).action_done()
 
 
 def _price(env, module, name, code, outlet, channel, items):
@@ -318,9 +341,14 @@ def build_company(env, module, spec):
                        [(c, round(p * (1 + spec["price_markup"]), -3)) for c, _n, p in MEAT])
     _cooking_rule(env, module, spec, outlets)
     _promotions(env, module, spec, outlets)
+    scenarios.safe(env, "promo lengkap", scenarios.promotions, env, module, spec, outlets)
+    scenarios.safe(env, "draft harga 2027", scenarios.price_drafts, env, module, spec, outlets)
     _packs(env, cenv, module, spec, outlets, employees)
+    scenarios.safe(env, "stok & opname", scenarios.inventory, env, module, spec, outlets, employees)
     _history(env, module, spec, outlets)
     _activity(env, module, spec, outlets)
+    scenarios.safe(env, "POS & dapur hari ini", scenarios.live_pos, env, module, spec, outlets, employees)
+    scenarios.safe(env, "gelombang migrasi", scenarios.migration, env, module, spec, outlets)
     return company
 
 
@@ -504,36 +532,88 @@ def _ingredients_stock(env, outlet):
 
 
 def _history(env, module, spec, outlets):
-    """Riwayat penjualan 7 hari dikirim lewat inbox sinkron seperti dari Rasentra Lokal, lalu diposting ke SAP
-    (mode simulasi) agar dashboard, laporan, rekonsiliasi dan antrean SAP berisi."""
+    """Riwayat penjualan (default 30 hari) dikirim lewat inbox sinkron seperti dari Rasentra Lokal, termasuk
+    diskon promo, retur dan tutup hari, lalu diposting ke SAP (mode simulasi). Dashboard, laporan,
+    rekonsiliasi (cocok, selisih, menunggu struk) dan antrean SAP jadi berisi."""
     rng = random.Random(spec["key"] + "-history")
     Inbox = env["rasentra.sync.inbox"].sudo()
     today = fields.Date.context_today(env["res.users"])
-    counters = {}
-    for back in range(6, -1, -1):
+    days = spec.get("history_days", 30)
+    promo = ref(env, module, f"promo_{spec['promos'][0][0]}") if spec.get("promos") else None
+    counters, returns = {}, {}
+
+    def send(device, outlet, entity_type, event_type, payload, entity_id=None, version=1):
+        Inbox._receive_one(device, {
+            "event_id": uuid7(), "source_id": device.code, "outlet_id": outlet.code, "entity_type": entity_type,
+            "entity_id": entity_id or payload.get("id") or uuid7(), "entity_version": version,
+            "event_type": event_type, "business_date": payload["business_date"], "payload": payload,
+            "checksum": checksum(payload),
+        })
+
+    for back in range(days - 1, -1, -1):
         day = today - timedelta(days=back)
         if back == 0:
             # Hari-hari lalu sudah terposting; struk hari ini masih menunggu antrean SAP (seperti pagi hari).
             try:
-                env["rasentra.sap.document"].post_pending(limit=2000)
+                env["rasentra.sap.document"].post_pending(limit=5000)
             except Exception as error:  # noqa: BLE001
                 _logger.warning("Posting SAP demo gagal: %s", error)
-        for o in spec["outlets"]:
+        weekend = day.weekday() >= 5
+        for index, o in enumerate(spec["outlets"]):
             outlet = outlets[o["code"]]
             device = env.ref(f"{module}.device_{o['key']}")
-            for _n in range(rng.randint(6, 12)):
+            docs, net_total, rets, ret_total = [], 0, [], 0
+            for _n in range(rng.randint(14, 22) if weekend else rng.randint(8, 15)):
                 counters[o["code"]] = counter = counters.get(o["code"], 0) + 1
                 channel = "retail" if o.get("retail") and (not o.get("restaurant") or rng.random() < 0.6) else "restaurant"
-                payload = _sale_payload(env, rng, outlet, day, counter, channel)
-                event = {
-                    "event_id": uuid7(), "source_id": device.code, "outlet_id": outlet.code, "entity_type": "order",
-                    "entity_id": payload["id"], "entity_version": 1, "event_type": "order.finalized",
-                    "business_date": payload["business_date"], "payload": payload, "checksum": checksum(payload),
-                }
-                Inbox._receive_one(device, event)
+                payload = _sale_payload(env, rng, outlet, day, counter, channel,
+                                        promo if channel == "retail" and rng.random() < 0.3 else None)
+                send(device, outlet, "order", "order.finalized", payload)
+                docs.append(payload["doc_no"])
+                net_total += int(payload["net_amount"][:-3])
+                if channel == "retail" and back and rng.random() < 0.04:
+                    returns[o["code"]] = n_ret = returns.get(o["code"], 0) + 1
+                    ret = _return_payload(outlet, day, payload, n_ret, rng)
+                    send(device, outlet, "sales_return", "order.returned", ret)
+                    rets.append(ret["doc_no"])
+                    ret_total += int(ret["net_amount"][:-3])
+            if back:
+                # Tutup hari: hampir semua cocok; contoh selisih nominal (H-3) dan struk belum sampai (H-1).
+                closed_net, closed_docs = net_total, list(docs)
+                if back == 3 and index == 0:
+                    closed_net += 25000
+                if back == 1 and index == 0:
+                    closed_docs.append(f"{outlet.code}-{day:%y%m%d}-99999")
+                    closed_net += 185000
+                diff = rng.choice(["0.00", "0.00", "0.00", "-5000.00", "2000.00", "-12000.00"])
+                send(device, outlet, "business_day", "business_day.closed", {
+                    "outlet_code": outlet.code, "business_date": fields.Date.to_string(day),
+                    "closed_at": f"{day}T14:30:00Z", "orders": len(closed_docs), "net_amount": f"{closed_net}.00",
+                    "doc_nos": closed_docs, "returns": len(rets), "returns_net_amount": f"{ret_total}.00",
+                    "return_doc_nos": rets, "shifts": [{"id": f"{outlet.code}-{day:%y%m%d}-S1",
+                                                         "cash_difference": diff}],
+                    "cash_difference": diff, "open_shifts": 0,
+                }, entity_id=f"{outlet.code}-{day}")
             env["rasentra.outlet.sync.state"].sudo().heartbeat(device, {
                 "app_version": "18.0.1.0.0", "outbox": {"pending": 0, "failed": 0, "parked": 0},
                 "open_business_date": fields.Date.to_string(today), "open_shifts": 1})
+
+
+def _return_payload(outlet, day, sale, number, rng):
+    line = sale["lines"][0]
+    return {
+        "id": uuid7(), "doc_no": f"{outlet.code}-R{day:%y%m%d}-{number:04d}", "original_order_id": sale["id"],
+        "original_doc_no": sale["doc_no"], "outlet_id": outlet.code, "channel": "retail",
+        "business_date": fields.Date.to_string(day), "reason": rng.choice(["Bau tidak segar", "Salah potong",
+                                                                           "Kemasan bocor"]),
+        "gross_amount": line["net_amount"], "discount_amount": "0.00", "net_amount": line["net_amount"],
+        "refund": {"method": "cash", "amount": line["net_amount"], "ref": None},
+        "finalized_at": f"{day}T13:00:00Z",
+        "lines": [{"line_no": 1, "order_line_no": line["line_no"], "line_type": line["line_type"],
+                   "product_id": line["product_id"], "pack_id": line["pack_code"], "quantity": line["quantity"],
+                   "uom": line["uom"], "unit_price": line["unit_price"], "gross_amount": line["net_amount"],
+                   "discount_amount": "0.00", "net_amount": line["net_amount"], "disposition": "quarantine"}],
+    }
 
 
 def _activity(env, module, spec, outlets):
@@ -569,18 +649,21 @@ def _activity(env, module, spec, outlets):
         Batch.import_xml(msi, "SLO_MSI_20261028_ulang.xml", "MSI")
 
 
-def _sale_payload(env, rng, outlet, day, counter, channel):
+def _sale_payload(env, rng, outlet, day, counter, channel, promo=None):
     if channel == "retail":
         picks = rng.sample(MEAT, rng.randint(1, 2))
         lines = []
         for i, (code, _name, price) in enumerate(picks, 1):
             qty = round(rng.uniform(0.6, 2.2), 3)
             gross = round(qty * price)
+            disc = round(gross * promo.rules.get("percent", 0) / 100) if promo and i == 1 else 0
             lines.append({"id": uuid7(), "line_no": i, "line_type": "meat_pack", "product_id": code,
                           "product_code": code, "pack_code": f"PK-H-{outlet.code}-{counter}-{i}",
                           "quantity": f"{qty:.6f}", "uom": "kg", "unit_price": f"{price}.00",
-                          "gross_amount": f"{gross}.00", "discount_amount": "0.00", "net_amount": f"{gross}.00",
-                          "discounts": []})
+                          "gross_amount": f"{gross}.00", "discount_amount": f"{disc}.00",
+                          "net_amount": f"{gross - disc}.00",
+                          "discounts": [{"promotion_version_id": promo.uuid, "amount": f"{disc}.00",
+                                         "funded_by": "internal"}] if disc else []})
     else:
         picks = rng.sample(MENU, rng.randint(2, 4))
         lines = []
@@ -592,12 +675,13 @@ def _sale_payload(env, rng, outlet, day, counter, channel):
                           "unit_price": f"{price}.00", "gross_amount": f"{gross}.00", "discount_amount": "0.00",
                           "net_amount": f"{gross}.00", "discounts": []})
     net = sum(int(l["net_amount"][:-3]) for l in lines)
+    gross_total = sum(int(l["gross_amount"][:-3]) for l in lines)
     method = rng.choice(["cash", "qris", "qris", "edc_manual"])
     hour = rng.randint(3, 13)  # 10:00-20:00 WIB dalam UTC
     finalized = datetime.combine(day, datetime.min.time()) + timedelta(hours=hour, minutes=rng.randint(0, 59))
     return {
         "id": uuid7(), "doc_no": f"{outlet.code}-{day:%y%m%d}-{counter:05d}", "outlet_id": outlet.code,
-        "channel": channel, "business_date": fields.Date.to_string(day), "gross_amount": f"{net}.00",
-        "discount_amount": "0.00", "net_amount": f"{net}.00", "finalized_at": finalized.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "channel": channel, "business_date": fields.Date.to_string(day), "gross_amount": f"{gross_total}.00",
+        "discount_amount": f"{gross_total - net}.00", "net_amount": f"{net}.00", "finalized_at": finalized.strftime("%Y-%m-%dT%H:%M:%SZ"),
         "lines": lines, "payments": [{"id": uuid7(), "method": method, "amount": f"{net}.00", "status": "succeeded"}],
     }
